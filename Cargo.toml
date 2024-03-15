@@ -1,0 +1,46 @@
+[package]
+name = "simular"
+version = "0.2.0"
+edition = "2021"
+authors = ["Dave Bryson"]
+readme = "README.md"
+license = "Apache-2.0"
+description = "smart-contract api and embedded ethereum virtual machine"
+repository = "https://github.com/simular-fi/simular"
+homepage = "https://github.com/simular-fi/simular"
+categories = ["cryptography::cryptocurrencies"]
+keywords = ["revm", "python", "ethereum", "web3", "abm"]
+
+[lib]
+name = "simular"
+crate-type = ["cdylib", "rlib"]
+
+
+[dependencies]
+anyhow = "1.0.81"
+
+alloy-dyn-abi = "0.6.4"
+alloy-json-abi = "0.6.4"
+alloy-primitives = { version = "0.6.4", default-features = false }
+
+
+serde = "1.0.165"
+serde_json = "1.0.99"
+
+
+revm = { version = "7.1.0", default-features = false, features = [
+    "ethersdb",
+    "memory_limit",
+    "optional_eip3607",
+    "optional_block_gas_limit",
+    "optional_no_base_fee",
+    "arbitrary",
+] }
+
+pyo3 = "0.20.0"
+
+# using this to allow cargo test on rust code. See:
+# https://github.com/PyO3/pyo3/issues/340#issuecomment-461514532
+[features]
+extension-module = ["pyo3/extension-module"]
+default = ["extension-module"]
