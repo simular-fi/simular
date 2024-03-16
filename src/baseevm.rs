@@ -10,7 +10,6 @@ use revm::{
 };
 
 pub struct BaseEvm {
-    //evm: Evm<'a, (), InMemoryDB>,
     state: Option<ContextWithHandlerCfg<(), InMemoryDB>>,
 }
 
