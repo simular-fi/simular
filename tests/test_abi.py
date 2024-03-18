@@ -1,7 +1,7 @@
 import pytest
 from eth_utils import is_address, to_wei, is_address
 
-from simular import PyEvm, create_many_accounts, create_account, Contract
+from simular import PyEvm, create_many_accounts, create_account, contract_from_raw_abi
 
 
 def test_contract_deploy_no_args():
@@ -11,7 +11,7 @@ def test_contract_deploy_no_args():
     client = PyEvm()
     deployer = create_account(client, value=2)
 
-    counter = Contract(client, counterabi)
+    counter = contract_from_raw_abi(client, counterabi)
     address = counter.deploy(deployer)
 
     assert is_address(address)
@@ -34,7 +34,7 @@ def test_simple_read_write_contract():
     deployer = actors[0]
     bob = actors[1]
 
-    counter = Contract(client, counterabi)
+    counter = contract_from_raw_abi(client, counterabi)
     counter.deploy(deployer)
 
     # make 99 calls to the number
@@ -48,6 +48,19 @@ def test_simple_read_write_contract():
         # can't call functions that don't exist
         counter.nope.call()
 
+    state = client.dump_state()
+    # print(state)
+    # print("-------")
+
+    # Load from last state...
+    client2 = PyEvm()
+    client2.load_state(state)
+    counter2 = contract_from_raw_abi(client2, counterabi)
+    counter2.at(counter.address)
+
+    b1 = counter2.number.call()
+    assert b1 == 99
+
 
 def test_contract_deploy_with_args():
     with open("./tests/fixtures/erc20.json") as f:
@@ -56,7 +69,7 @@ def test_contract_deploy_with_args():
     client = PyEvm()
     deployer = create_account(client, value=2)
 
-    erc = Contract(client, ercabi)
+    erc = contract_from_raw_abi(client, ercabi)
     erc.deploy(deployer, args=("hello", "H", 6))
 
     assert is_address(erc.address)

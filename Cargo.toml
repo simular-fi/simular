@@ -37,6 +37,12 @@ revm = { version = "7.1.0", default-features = false, features = [
     "arbitrary",
 ] }
 
+ethers-providers = "2.0"
+# need this feature in reqwest to deal with potential self-signed certs
+reqwest = { version = "0.11.19", features = ["rustls-tls"] }
+
+hex = { version = "0.4.3", features = ["serde"] }
+
 pyo3 = "0.20.0"
 
 # using this to allow cargo test on rust code. See:

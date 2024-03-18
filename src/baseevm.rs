@@ -1,38 +1,43 @@
 use alloy_dyn_abi::{DynSolType, DynSolValue};
+use alloy_primitives::{Bytes, FixedBytes};
 use anyhow::Result;
 
+use ethers_providers::{Http, Provider};
+use std::sync::Arc;
+
+use crate::snapshot::{SerializableAccountRecord, SerializableState};
+
 use revm::{
-    db::InMemoryDB,
+    db::{CacheDB, EthersDB, InMemoryDB},
     primitives::{
-        AccountInfo, Address, ExecutionResult, Log, Output, ResultAndState, TransactTo, TxEnv, U256,
+        AccountInfo, Address, Bytecode, ExecutionResult, Log, Output, ResultAndState, TransactTo,
+        TxEnv, KECCAK_EMPTY, U256,
     },
-    ContextWithHandlerCfg, Database, Evm, Handler,
+    ContextWithHandlerCfg, Database, DatabaseCommit, Evm, Handler,
 };
 
-pub struct BaseEvm {
-    state: Option<ContextWithHandlerCfg<(), InMemoryDB>>,
+pub type ForkDb = CacheDB<EthersDB<Provider<Http>>>;
+
+pub struct BaseEvm<DB: Database + DatabaseCommit> {
+    state: Option<ContextWithHandlerCfg<(), DB>>,
 }
 
-impl Default for BaseEvm {
-    fn default() -> Self {
-        let evm = Evm::builder().with_db(InMemoryDB::default()).build();
+impl BaseEvm<ForkDb> {
+    pub fn create(url: &str) -> Self {
+        let client =
+            Provider::<Http>::try_from(url).expect("failed to load HTTP provided for forkdb");
+        let client = Arc::new(client);
+        let ethersdb = EthersDB::new(
+            Arc::clone(&client), // public infura mainnet
+            None,
+        )
+        .expect("failed to load ethersdb for forkdb");
+
+        // Using EthersDb with CacheDB for a ForkDb
+        let cache_db = CacheDB::new(ethersdb);
+        let evm = Evm::builder().with_db(cache_db).build();
         Self {
             state: Some(evm.into_context_with_handler_cfg()),
-        }
-    }
-}
-
-impl BaseEvm {
-    fn get_evm(&mut self) -> Evm<(), InMemoryDB> {
-        match self.state.take() {
-            Some(st) => {
-                let ContextWithHandlerCfg { context, cfg } = st;
-                Evm {
-                    context,
-                    handler: Handler::new(cfg),
-                }
-            }
-            _ => panic!("EVM state is None"),
         }
     }
 
@@ -46,6 +51,149 @@ impl BaseEvm {
         self.state = Some(evm.into_context_with_handler_cfg());
 
         Ok(())
+    }
+
+    pub fn dump_state(&mut self) -> Result<SerializableState> {
+        let mut evm = self.get_evm();
+        // adapted from foundry-rs
+        let accounts = evm
+            .context
+            .evm
+            .db
+            .accounts
+            .clone()
+            .into_iter()
+            .map(|(k, v)| -> Result<(Address, SerializableAccountRecord)> {
+                let code = if let Some(code) = v.info.code {
+                    code
+                } else {
+                    evm.context.evm.db.code_by_hash(v.info.code_hash)?
+                }
+                .to_checked();
+                Ok((
+                    k,
+                    SerializableAccountRecord {
+                        nonce: v.info.nonce,
+                        balance: v.info.balance,
+                        code: code.original_bytes(),
+                        storage: v.storage.into_iter().collect(),
+                    },
+                ))
+            })
+            .collect::<Result<_, _>>()?;
+
+        Ok(SerializableState {
+            accounts,
+            //contracts,
+        })
+    }
+}
+
+impl BaseEvm<InMemoryDB> {
+    pub fn create() -> Self {
+        let evm = Evm::builder().with_db(InMemoryDB::default()).build();
+        Self {
+            state: Some(evm.into_context_with_handler_cfg()),
+        }
+    }
+
+    pub fn create_account(&mut self, caller: Address, amount: Option<U256>) -> Result<()> {
+        let mut info = AccountInfo::default();
+        if let Some(amnt) = amount {
+            info.balance = amnt;
+        }
+        let mut evm = self.get_evm();
+        evm.context.evm.db.insert_account_info(caller, info);
+        self.state = Some(evm.into_context_with_handler_cfg());
+
+        Ok(())
+    }
+
+    // only in memory db
+    pub fn load_state(&mut self, cache: SerializableState) {
+        let mut evm = self.get_evm();
+        for (addr, account) in cache.accounts.into_iter() {
+            // note: this will populate both 'accounts' and 'contracts'
+            evm.context.evm.db.insert_account_info(
+                addr,
+                AccountInfo {
+                    balance: account.balance,
+                    nonce: account.nonce,
+                    code_hash: KECCAK_EMPTY,
+                    code: if account.code.0.is_empty() {
+                        None
+                    } else {
+                        Some(
+                            Bytecode::new_raw(alloy_primitives::Bytes(account.code.0)).to_checked(),
+                        )
+                    },
+                },
+            );
+
+            // ... but we still need to load the account storage map
+            for (k, v) in account.storage.into_iter() {
+                evm.context
+                    .evm
+                    .db
+                    .accounts
+                    .entry(addr)
+                    .or_default()
+                    .storage
+                    .insert(k, v);
+            }
+        }
+        self.state = Some(evm.into_context_with_handler_cfg());
+    }
+
+    // in both memory and fork
+    pub fn dump_state(&mut self) -> Result<SerializableState> {
+        let mut evm = self.get_evm();
+        // adapted from foundry-rs
+        let accounts = evm
+            .context
+            .evm
+            .db
+            .accounts
+            .clone()
+            .into_iter()
+            .map(|(k, v)| -> Result<(Address, SerializableAccountRecord)> {
+                let code = if let Some(code) = v.info.code {
+                    code
+                } else {
+                    evm.context.evm.db.code_by_hash(v.info.code_hash)?
+                }
+                .to_checked();
+                Ok((
+                    k,
+                    SerializableAccountRecord {
+                        nonce: v.info.nonce,
+                        balance: v.info.balance,
+                        code: code.original_bytes(),
+                        storage: v.storage.into_iter().collect(),
+                    },
+                ))
+            })
+            .collect::<Result<_, _>>()?;
+
+        Ok(SerializableState {
+            accounts,
+            //contracts,
+        })
+    }
+}
+
+impl<DB: Database + DatabaseCommit> BaseEvm<DB> {
+    pub fn get_evm(&mut self) -> Evm<(), DB> {
+        match self.state.take() {
+            Some(st) => {
+                let ContextWithHandlerCfg { context, cfg } = st;
+                Evm {
+                    context,
+                    handler: Handler::new(cfg),
+                }
+            }
+            _ => panic!("EVM state is None"),
+        }
     }
 
     /// Get the balance for the account
@@ -75,7 +223,7 @@ impl BaseEvm {
 
         let (output, _, _) = evm
             .transact_commit()
-            .map_err(|e| anyhow::anyhow!("error on deploy: {:?}", e))
+            .map_err(|_| anyhow::anyhow!("error on deploy"))
             .and_then(process_execution_result)?;
 
         self.state = Some(evm.into_context_with_handler_cfg());
@@ -105,7 +253,7 @@ impl BaseEvm {
                 self.state = Some(evm.into_context_with_handler_cfg());
                 Ok(gas)
             }
-            Err(e) => Err(anyhow::anyhow!("Error on transfer: {:?}", e)),
+            Err(_) => Err(anyhow::anyhow!("Error on transfer")),
         }
     }
 
@@ -197,6 +345,7 @@ fn parse_revert_message(output: revm::primitives::Bytes) -> Result<String> {
 
 #[cfg(test)]
 mod tests {
+
     use super::*;
 
     #[test]
@@ -206,7 +355,7 @@ mod tests {
         let a = Address::repeat_byte(1);
         let b = Address::repeat_byte(2);
 
-        let mut evm = BaseEvm::default();
+        let mut evm = BaseEvm::<InMemoryDB>::create();
         evm.create_account(a, Some(two_eth)).unwrap();
 
         let a1 = evm.get_balance(a).unwrap();
@@ -221,6 +370,10 @@ mod tests {
         let b2 = evm.get_balance(b).unwrap();
         assert_eq!(one_eth, a2);
         assert_eq!(one_eth, b2);
+
+        let st = evm.dump_state().unwrap();
+        let r = serde_json::to_string(&st);
+        println!("{:?}", r);
     }
 
     #[test]
@@ -228,7 +381,7 @@ mod tests {
         let a = Address::repeat_byte(1);
         let b = Address::repeat_byte(2);
 
-        let mut evm = BaseEvm::default();
+        let mut evm = BaseEvm::<InMemoryDB>::create();
         evm.create_account(a, None).unwrap();
 
         let a1 = evm.get_balance(a).unwrap();

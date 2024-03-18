@@ -4,7 +4,7 @@ from eth_utils import to_wei, is_address
 import typing
 
 
-from .simular import PyEvm, PyAbi
+from .simular import PyEvm, PyAbi, PyEvmFork
 
 
 def generate_random_address() -> str:
@@ -52,7 +52,7 @@ def create_many_accounts(evm: PyEvm, num: int, value: int = 0) -> typing.List[st
 
 
 class Contract:
-    def __init__(self, evm: PyEvm, raw_abi: str):
+    def __init__(self, evm: PyEvm, abi: PyAbi):
         """
         Instantiate a contract from an ABI parsed on the Rust side.
 
@@ -61,10 +61,7 @@ class Contract:
         """
         self.address = None
         self.evm = evm
-        if isinstance(raw_abi, str):
-            self.abi = PyAbi.load_from_json(raw_abi)
-        else:
-            raise Exception("Unrecognized abi format")
+        self.abi = abi
 
     def __getattr__(self, name: str):
         """
@@ -102,6 +99,30 @@ class Contract:
         addr = self.evm.deploy(caller, bytecode, value)
         self.address = addr
         return addr
+
+
+def contract_from_raw_abi(evm: PyEvm, raw_abi: str) -> Contract:
+    """
+    Create the contract given the full ABI as a str.
+    """
+    if isinstance(raw_abi, str):
+        abi = PyAbi.load_from_json(raw_abi)
+    else:
+        raise Exception("expected a an un-parsed json file")
+    return Contract(evm, abi)
+
+
+def contract_from_inline_abi(evm: PyEvm, abi: typing.List[str]) -> Contract:
+    """
+    Create the contract using inline ABI.
+
+    For example, to support a method call of `hello(address name) (uint256)`
+    that takes an `address` as input and returns an `uint256` value, pass this
+    function a list of str(s) - `["function hello(address name) (uint256)"]. It
+    will then be available on the contract: `contract.hello('0x...').transact(...)`
+    """
+    abi = PyAbi.load_from_human_readable(abi)
+    return Contract(evm, abi)
 
 
 def decode_output(params, rawbits):
