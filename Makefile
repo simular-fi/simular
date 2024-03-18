@@ -9,3 +9,6 @@ test: build
 
 rust_tests:
 	cargo test --no-default-features
+
+benchit:
+	poetry run python bench/simple.py

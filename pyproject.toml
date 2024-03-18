@@ -24,6 +24,7 @@ eth-utils = "^2.2.0"
 black = "^23.7.0"
 pytest = "^7.4.0"
 maturin = "^1.1.0"
+tqdm = "^4.66.2"
 
 [tool.maturin]
 features = ["pyo3/extension-module"]
