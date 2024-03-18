@@ -19,6 +19,11 @@ impl PyAbi {
     }
 
     #[staticmethod]
+    pub fn load_from_parts(abi: &str, bytes: Vec<u8>) -> Self {
+        Self(ContractAbi::load_from_parts(abi, bytes))
+    }
+
+    #[staticmethod]
     pub fn load_from_human_readable(values: Vec<&str>) -> Self {
         Self(ContractAbi::load_human_readable(values))
     }

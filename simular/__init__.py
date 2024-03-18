@@ -116,6 +116,13 @@ def contract_from_raw_abi(evm: PyEvmLocal | PyEvmFork, raw_abi: str) -> Contract
     return Contract(evm, abi)
 
 
+def contract_from_abi_bytecode(
+    evm: PyEvmLocal | PyEvmFork, raw_abi: str, bytecode: bytes
+) -> Contract:
+    abi = PyAbi.load_from_parts(abi, bytecode)
+    return Contract(evm, abi)
+
+
 def contract_from_inline_abi(
     evm: PyEvmLocal | PyEvmFork, abi: typing.List[str]
 ) -> Contract:
