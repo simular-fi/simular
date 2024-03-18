@@ -65,6 +65,16 @@ impl PyEvmFork {
         let r = self.0.dump_state().map_err(|e| pyerr(e))?;
         serde_json::to_string_pretty(&r).map_err(|e| pyerr(e))
     }
+
+    pub fn view_storage_slot(&mut self, address: &str, index: u128) -> PyResult<Vec<u8>> {
+        let location = str_to_address(address)?;
+        let idx = U256::try_from(index).map_err(|e| pyerr(e))?;
+        let r = self
+            .0
+            .view_storage_slot(location, idx)
+            .map_err(|e| pyerr(e))?;
+        Ok(r.to_le_bytes_vec())
+    }
 }
 
 #[pyclass]
@@ -131,5 +141,15 @@ impl PyEvmLocal {
     pub fn dump_state(&mut self) -> PyResult<String> {
         let r = self.0.dump_state().map_err(|e| pyerr(e))?;
         serde_json::to_string_pretty(&r).map_err(|e| pyerr(e))
+    }
+
+    pub fn view_storage_slot(&mut self, address: &str, index: u128) -> PyResult<Vec<u8>> {
+        let location = str_to_address(address)?;
+        let idx = U256::try_from(index).map_err(|e| pyerr(e))?;
+        let r = self
+            .0
+            .view_storage_slot(location, idx)
+            .map_err(|e| pyerr(e))?;
+        Ok(r.to_le_bytes_vec())
     }
 }

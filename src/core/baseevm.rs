@@ -193,6 +193,18 @@ impl<DB: Database + DatabaseCommit> BaseEvm<DB> {
         }
     }
 
+    pub fn view_storage_slot(&mut self, addr: Address, slot: U256) -> Result<U256> {
+        let mut evm = self.get_evm();
+        let r = evm
+            .context
+            .evm
+            .db
+            .storage(addr, slot)
+            .map_err(|_| anyhow::anyhow!("error viewing storage slot"))?;
+        self.state = Some(evm.into_context_with_handler_cfg());
+        Ok(r)
+    }
+
     /// Get the balance for the account
     pub fn get_balance(&mut self, caller: Address) -> Result<U256> {
         let mut evm = self.get_evm();
