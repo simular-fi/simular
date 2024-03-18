@@ -1,5 +1,4 @@
 from secrets import token_hex
-from eth_abi import encode, decode
 from eth_utils import to_wei, is_address
 import typing
 
@@ -9,6 +8,8 @@ from . import PyEvmLocal, PyAbi, PyEvmFork, Contract
 def generate_random_address() -> str:
     """
     Generate a random hex encoded account/wallet address
+
+    Returns: the address
     """
     return "0x" + token_hex(20)
 
@@ -20,7 +21,8 @@ def create_account(
     Create an account in the EVM.
 
     Parameters:
-    - address: str  optional. If set it will be used for the account address.
+    - evm    : PyEvmLocal | PyEvmForm.  the EVM client
+    - address: str  optional. if set it will be used for the account address.
                               Otherwise a random address will be generated.
     - value  : int  optional. create an initial balance for the account in ether
 
@@ -46,8 +48,9 @@ def create_many_accounts(
     Create many accounts in the EVM
 
     Parameters:
-    - num    : int the number of accounts to create
-    - value  : int  optional. create an initial balance for the account in ether
+    - evm    : PyEvmLocal | PyEvmForm.  the EVM client
+    - num    : int  the number of accounts to create
+    - value  : int  optional. create an initial balance for each account in ether
 
     Returns a list of addresses
     """
@@ -68,7 +71,10 @@ def contract_from_raw_abi(evm: PyEvmLocal | PyEvmFork, raw_abi: str) -> Contract
 def contract_from_abi_bytecode(
     evm: PyEvmLocal | PyEvmFork, raw_abi: str, bytecode: bytes
 ) -> Contract:
-    abi = PyAbi.load_from_parts(abi, bytecode)
+    """
+    Create a contract given the abi and bytcodes
+    """
+    abi = PyAbi.load_from_parts(raw_abi, bytecode)
     return Contract(evm, abi)
 
 

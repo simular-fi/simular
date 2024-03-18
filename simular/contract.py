@@ -1,14 +1,22 @@
 from eth_abi import encode, decode
 from eth_utils import is_address
+import typing
+
 from .simular import PyEvmLocal, PyAbi, PyEvmFork
 
 
 class Function:
     """
-    Callback to invoke contract functions
+    Callback to invoke contract functions. Used by Contract
     """
 
-    def __init__(self, contract_address, name, client, abi):
+    def __init__(
+        self,
+        contract_address: str,
+        name: str,
+        client: PyEvmLocal | PyEvmLocal,
+        abi: PyAbi,
+    ):
         self.name = name
         self.client = client
         self.abi = abi
@@ -34,7 +42,7 @@ class Function:
         (bits, _) = self.client.transact(caller, self.contract_address, encoded, value)
         return self.__decode_output(output_params, bytes(bits))
 
-    def __decode_output(self, params, rawbits):
+    def __decode_output(self, params: typing.List[str], rawbits: bytes):
         decoded = decode(params, rawbits)
         if len(decoded) == 1:
             return decoded[0]
@@ -47,8 +55,8 @@ class Contract:
         """
         Instantiate a contract from an ABI parsed on the Rust side.
 
-        Maps contract functions to this class, and automatically determines
-        if a method call should be a contract transaction or a read-only call.
+        Maps contract functions to this class.  Making function available
+        as attributs on the Contract.
         """
         self.address = None
         self.evm = evm
@@ -58,7 +66,7 @@ class Contract:
         """
         Make solidity contract methods available as method calls.
         For example, if the ABI has the contract function 'function hello(uint256)',
-        you can invoke it by name: contract.hello(10)
+        you can invoke it by name: contract.hello.transact(10)
         """
         if self.abi.has_function(name):
             return Function(self.address, name, self.evm, self.abi)
@@ -67,7 +75,7 @@ class Contract:
 
     def at(self, address: str) -> "Contract":
         """
-        Set the contract address, if not already set on deploy
+        Set the contract address. Note: this is automatically set when using deploy
         """
         self.address = address
         return self

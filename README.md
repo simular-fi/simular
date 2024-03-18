@@ -9,9 +9,13 @@ How is this different than Brownie, Ganache, Anvil?
 
 The primary motivation for this work is to be able to model smart-contract interaction in an Agent Based Modeling environment like [Mesa](https://mesa.readthedocs.io/en/main/).
 
+## Features
+- Fork
+- ABI...
 
-## Get Started
-- You need `Rust`, `Python/Poetry`. Will be available on PyPi soon.
+## Build
+(Will be available on PyPi soon)
+- You need `Rust`, `Python/Poetry`, and `Make`.
 - Run `make build`
 - See `simular/__init__.py` for the main python api
 
@@ -20,20 +24,21 @@ Deploy and interact with the classic `counter` smart contract
 
 ```python
 
-    from simular import PyEvm, create_many_accounts, create_account, Contract
+    from simular import PyEvmLocal, create_many_accounts, create_account, Contract
 
     # load contract abi
     with open("./tests/fixtures/counter.json") as f:
         counterabi = f.read()
     
-    # create the EVM client
-    client = PyEvm()
+    # Create the EVM client
+    client = PyEvmLocal()
 
-    # Create 2 accounts and fund them with 2 ether
-    [deployer, alice] = create_many_accounts(2, 2)
+    # Create 2 accounts and fund each with 2 ether
+    [deployer, alice] = create_many_accounts(client, 2, 2)
 
     # Create and instance of the contract and deploy it to the EVM
     counter = Contract(client, counterabi)
+    # Returns the address of the contract
     address = counter.deploy(deployer)
     assert is_address(counter.address)
 
@@ -52,9 +57,9 @@ Deploy and interact with the classic `counter` smart contract
     assert result == 10
 ```
 
-## Standing on the shoulders of giants
+## Standing on the shoulders of giants...
 Thanks to the following projects for making this work easy!
 - [pyO3](https://github.com/PyO3)
 - [revm](https://github.com/bluealloy/revm)
-- [alloy-rs](https://github.com/alloy-rs/core/tree/main)
+- [alloy-rs](https://github.com/alloy-rs)
 - [eth_utils/eth_abi](https://eth-utils.readthedocs.io/en/stable/) 

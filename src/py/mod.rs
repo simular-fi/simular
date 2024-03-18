@@ -5,13 +5,12 @@ use pyo3::{exceptions::PyRuntimeError, prelude::PyErr};
 use revm::primitives::Address;
 use std::fmt::Debug;
 
+/// Used to map an Error to PyErr
 pub fn pyerr<T: Debug>(err: T) -> PyErr {
     PyRuntimeError::new_err(format!("{:?}", err))
 }
 
-/// Helper to convert strings to addresses.  String addresses are passed through
-/// from Python.
-///
+/// Convert strings to addresses.  String addresses are passed through from Python.
 pub fn str_to_address(caller: &str) -> Result<Address, PyErr> {
     let c = caller
         .parse::<Address>()

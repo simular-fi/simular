@@ -7,7 +7,7 @@ use revm::{
         AccountInfo, Address, Bytecode, ExecutionResult, Log, Output, ResultAndState, TransactTo,
         TxEnv, KECCAK_EMPTY, U256,
     },
-    ContextWithHandlerCfg, Database, DatabaseCommit, Evm, Handler,
+    ContextWithHandlerCfg, Database, DatabaseCommit, DatabaseRef, Evm, Handler,
 };
 use std::sync::Arc;
 
@@ -22,7 +22,7 @@ pub struct BaseEvm<DB: Database + DatabaseCommit> {
 impl BaseEvm<ForkDb> {
     pub fn create(url: &str) -> Self {
         let client =
-            Provider::<Http>::try_from(url).expect("failed to load HTTP provided for forkdb");
+            Provider::<Http>::try_from(url).expect("failed to load HTTP provider for forkdb");
         let client = Arc::new(client);
         let ethersdb = EthersDB::new(
             Arc::clone(&client), // public infura mainnet
@@ -78,6 +78,8 @@ impl BaseEvm<ForkDb> {
                 ))
             })
             .collect::<Result<_, _>>()?;
+
+        self.state = Some(evm.into_context_with_handler_cfg());
 
         Ok(SerializableState {
             accounts,
@@ -172,6 +174,8 @@ impl BaseEvm<InMemoryDB> {
             })
             .collect::<Result<_, _>>()?;
 
+        self.state = Some(evm.into_context_with_handler_cfg());
+
         Ok(SerializableState {
             accounts,
             //contracts,
@@ -179,8 +183,8 @@ impl BaseEvm<InMemoryDB> {
     }
 }
 
-impl<DB: Database + DatabaseCommit> BaseEvm<DB> {
-    pub fn get_evm(&mut self) -> Evm<(), DB> {
+impl<DB: Database + DatabaseCommit + DatabaseRef> BaseEvm<DB> {
+    fn get_evm(&mut self) -> Evm<(), DB> {
         match self.state.take() {
             Some(st) => {
                 let ContextWithHandlerCfg { context, cfg } = st;
@@ -194,26 +198,27 @@ impl<DB: Database + DatabaseCommit> BaseEvm<DB> {
     }
 
     pub fn view_storage_slot(&mut self, addr: Address, slot: U256) -> Result<U256> {
-        let mut evm = self.get_evm();
+        let evm = self.get_evm();
         let r = evm
             .context
             .evm
             .db
-            .storage(addr, slot)
+            .storage_ref(addr, slot)
             .map_err(|_| anyhow::anyhow!("error viewing storage slot"))?;
+
         self.state = Some(evm.into_context_with_handler_cfg());
         Ok(r)
     }
 
     /// Get the balance for the account
     pub fn get_balance(&mut self, caller: Address) -> Result<U256> {
-        let mut evm = self.get_evm();
-        let result = match evm.context.evm.db.basic(caller) {
+        let evm = self.get_evm();
+        let result = match evm.context.evm.db.basic_ref(caller) {
             Ok(Some(account)) => account.balance,
             _ => U256::ZERO,
         };
-        self.state = Some(evm.into_context_with_handler_cfg());
 
+        self.state = Some(evm.into_context_with_handler_cfg());
         Ok(result)
     }
 
@@ -230,6 +235,20 @@ impl<DB: Database + DatabaseCommit> BaseEvm<DB> {
         let mut evm = self.get_evm();
         evm.context.evm.env.tx = tx;
 
+        let r = evm.transact_commit();
+        self.state = Some(evm.into_context_with_handler_cfg());
+        match r {
+            Ok(result) => {
+                let (output, _gas, _logs) = process_execution_result(result)?;
+                match output {
+                    Output::Create(_, Some(address)) => Ok(address),
+                    _ => Err(anyhow::anyhow!("Error on deploy: expected a create call")),
+                }
+            }
+            _ => Err(anyhow::anyhow!("Error on deploy")),
+        }
+
+        /*
         let (output, _, _) = evm
             .transact_commit()
             .map_err(|_| anyhow::anyhow!("error on deploy"))
@@ -241,6 +260,7 @@ impl<DB: Database + DatabaseCommit> BaseEvm<DB> {
             Output::Create(_, Some(address)) => Ok(address),
             _ => anyhow::bail!("expected a create call"),
         }
+        */
     }
 
     /// Transfer value between two accounts. If the 'to' address is a contract, the should contract
@@ -256,14 +276,28 @@ impl<DB: Database + DatabaseCommit> BaseEvm<DB> {
         let mut evm = self.get_evm();
         evm.context.evm.env.tx = tx;
 
-        match evm.transact_commit() {
+        let r = evm.transact_commit();
+        self.state = Some(evm.into_context_with_handler_cfg());
+        match r {
             Ok(result) => {
                 let (_b, gas, _logs) = process_result_with_value(result)?;
-                self.state = Some(evm.into_context_with_handler_cfg());
+                Ok(gas)
+            }
+            _ => Err(anyhow::anyhow!("Error on transfer")),
+        }
+
+        /*
+        let result = match evm.transact_commit() {
+            Ok(result) => {
+                let (_b, gas, _logs) = process_result_with_value(result)?;
                 Ok(gas)
             }
             Err(_) => Err(anyhow::anyhow!("Error on transfer")),
-        }
+        };
+
+        self.state = Some(evm.into_context_with_handler_cfg());
+        result
+        */
     }
 
     /// Send a write transaction `to` the given contract
@@ -285,14 +319,35 @@ impl<DB: Database + DatabaseCommit> BaseEvm<DB> {
         let mut evm = self.get_evm();
         evm.context.evm.env.tx = tx;
 
-        match evm.transact_commit() {
+        let r = evm.transact_commit();
+        self.state = Some(evm.into_context_with_handler_cfg());
+        match r {
             Ok(result) => {
                 let (b, gas, _logs) = process_result_with_value(result)?;
-                self.state = Some(evm.into_context_with_handler_cfg());
                 Ok((b, gas))
             }
-            _ => anyhow::bail!("Error on write"),
+            _ => Err(anyhow::anyhow!("Error on transact")),
         }
+
+        // TODO: because of state, need to handle errors better. bail! is returning early!
+        /*
+        let result = match evm.transact_commit() {
+            Ok(result) => {
+                self.state = Some(evm.into_context_with_handler_cfg());
+
+                let (b, gas, _logs) = process_result_with_value(result)?;
+                Ok((b, gas))
+            }
+            _ => {
+                self.state = Some(evm.into_context_with_handler_cfg());
+
+                // Can use bail again!!
+                Err(anyhow::anyhow!("Error on write"))
+            }
+        };
+
+        result
+        */
     }
 
     /// Send a read-only (view) call `to` the given contract
@@ -305,14 +360,29 @@ impl<DB: Database + DatabaseCommit> BaseEvm<DB> {
 
         let mut evm = self.get_evm();
         evm.context.evm.env.tx = tx;
-        match evm.transact() {
+
+        let r = evm.transact();
+        self.state = Some(evm.into_context_with_handler_cfg());
+        match r {
             Ok(ResultAndState { result, .. }) => {
                 let (r, gas, _) = process_result_with_value(result)?;
-                self.state = Some(evm.into_context_with_handler_cfg());
+                Ok((r, gas))
+            }
+            _ => Err(anyhow::anyhow!("Error on call")),
+        }
+
+        /*
+        let result = match evm.transact() {
+            Ok(ResultAndState { result, .. }) => {
+                let (r, gas, _) = process_result_with_value(result)?;
                 Ok((r, gas))
             }
             _ => anyhow::bail!("error on read"),
-        }
+        };
+
+        self.state = Some(evm.into_context_with_handler_cfg());
+        result
+        */
     }
 }
 
@@ -358,6 +428,18 @@ mod tests {
     use super::*;
 
     #[test]
+    fn bal_account() {
+        let one_eth = U256::from(1e18);
+        let bob = Address::repeat_byte(1);
+        let mut evm = BaseEvm::<InMemoryDB>::create();
+        assert_eq!(U256::from(0), evm.get_balance(bob).unwrap());
+
+        evm.create_account(bob, Some(one_eth)).unwrap();
+
+        assert_eq!(one_eth, evm.get_balance(bob).unwrap());
+    }
+
+    #[test]
     fn simple_transfer() {
         let one_eth = U256::from(1e18);
         let two_eth = U256::from(2e18);
@@ -380,9 +462,9 @@ mod tests {
         assert_eq!(one_eth, a2);
         assert_eq!(one_eth, b2);
 
-        let st = evm.dump_state().unwrap();
-        let r = serde_json::to_string(&st);
-        println!("{:?}", r);
+        //let st = evm.dump_state().unwrap();
+        //let r = serde_json::to_string(&st);
+        //println!("{:?}", r);
     }
 
     #[test]
@@ -391,6 +473,7 @@ mod tests {
         let b = Address::repeat_byte(2);
 
         let mut evm = BaseEvm::<InMemoryDB>::create();
+        // note: didn't fund account...
         evm.create_account(a, None).unwrap();
 
         let a1 = evm.get_balance(a).unwrap();
@@ -398,7 +481,7 @@ mod tests {
         assert_eq!(U256::from(0), a1);
         assert_eq!(U256::from(0), b1);
 
-        // nothing to xfer
+        // nothing to xfer, caller has no balance
         assert!(evm.transfer(a, b, U256::from(1e18)).is_err());
     }
 }
