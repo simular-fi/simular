@@ -12,21 +12,5 @@ pub struct SerializableAccountRecord {
 
 #[derive(Clone, Debug, Default, Serialize, Deserialize)]
 pub struct SerializableState {
-    /// The block number of the state
-    ///
-    /// Note: This is an Option for backwards compatibility: <https://github.com/foundry-rs/foundry/issues/5460>
     pub accounts: BTreeMap<Address, SerializableAccountRecord>,
-    //pub contracts: BTreeMap<FixedBytes<32>, Bytes>,
 }
-
-// Db Account
-//  - address
-//  - AccountInfo
-//  - account state (u8)
-//  - storage Map<u256, u256>
-//
-// AccountInfo
-//  - balance (u256)
-//  - nonce (u64)
-//  - codehash (bytes)
-//  - code (bytes)

@@ -5,7 +5,8 @@ use pyo3::{
     types::{PyAny, PyTuple},
 };
 
-use crate::{abi::ContractAbi, pyevm::pyerr};
+use super::pyerr;
+use crate::core::abi::ContractAbi;
 
 #[pyclass]
 pub struct PyAbi(ContractAbi);

@@ -1,4 +1,4 @@
-from simular import PyEvmFork, PyEvm, contract_from_inline_abi
+from simular import PyEvmFork, PyEvmLocal, contract_from_inline_abi
 
 USDC_ADDRESS = "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48"
 PROV_URL = "https://eth-mainnet.g.alchemy.com/v2/ATkznwXpa9jClTcg2hLhZr_xEVqaY2Do"
@@ -26,7 +26,7 @@ def test_fork_with_usdc():
     print("DONE....")
 
     # Reload state!
-    evm2 = PyEvm()
+    evm2 = PyEvmLocal()
     evm2.load_state(state)
     usdc2 = contract_from_inline_abi(
         evm2, ["function totalSupply() (uint256)", "function owner() (address)"]

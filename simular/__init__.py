@@ -4,7 +4,7 @@ from eth_utils import to_wei, is_address
 import typing
 
 
-from .simular import PyEvm, PyAbi, PyEvmFork
+from .simular import PyEvmLocal, PyAbi, PyEvmFork
 
 
 def generate_random_address() -> str:
@@ -14,7 +14,9 @@ def generate_random_address() -> str:
     return "0x" + token_hex(20)
 
 
-def create_account(evm: PyEvm, address: str = None, value: int = 0) -> str:
+def create_account(
+    evm: PyEvmLocal | PyEvmFork, address: str = None, value: int = 0
+) -> str:
     """
     Create an account in the EVM.
 
@@ -38,7 +40,9 @@ def create_account(evm: PyEvm, address: str = None, value: int = 0) -> str:
     return address
 
 
-def create_many_accounts(evm: PyEvm, num: int, value: int = 0) -> typing.List[str]:
+def create_many_accounts(
+    evm: PyEvmLocal | PyEvmFork, num: int, value: int = 0
+) -> typing.List[str]:
     """
     Create many accounts in the EVM
 
@@ -52,7 +56,7 @@ def create_many_accounts(evm: PyEvm, num: int, value: int = 0) -> typing.List[st
 
 
 class Contract:
-    def __init__(self, evm: PyEvm, abi: PyAbi):
+    def __init__(self, evm: PyEvmLocal | PyEvmFork, abi: PyAbi):
         """
         Instantiate a contract from an ABI parsed on the Rust side.
 
@@ -101,7 +105,7 @@ class Contract:
         return addr
 
 
-def contract_from_raw_abi(evm: PyEvm, raw_abi: str) -> Contract:
+def contract_from_raw_abi(evm: PyEvmLocal | PyEvmFork, raw_abi: str) -> Contract:
     """
     Create the contract given the full ABI as a str.
     """
@@ -112,7 +116,9 @@ def contract_from_raw_abi(evm: PyEvm, raw_abi: str) -> Contract:
     return Contract(evm, abi)
 
 
-def contract_from_inline_abi(evm: PyEvm, abi: typing.List[str]) -> Contract:
+def contract_from_inline_abi(
+    evm: PyEvmLocal | PyEvmFork, abi: typing.List[str]
+) -> Contract:
     """
     Create the contract using inline ABI.
 

@@ -1,11 +1,6 @@
 use alloy_dyn_abi::{DynSolType, DynSolValue};
 use anyhow::Result;
-
 use ethers_providers::{Http, Provider};
-use std::sync::Arc;
-
-use crate::snapshot::{SerializableAccountRecord, SerializableState};
-
 use revm::{
     db::{CacheDB, EthersDB, InMemoryDB},
     primitives::{
@@ -14,6 +9,9 @@ use revm::{
     },
     ContextWithHandlerCfg, Database, DatabaseCommit, Evm, Handler,
 };
+use std::sync::Arc;
+
+use crate::core::snapshot::{SerializableAccountRecord, SerializableState};
 
 pub type ForkDb = CacheDB<EthersDB<Provider<Http>>>;
 

@@ -199,7 +199,7 @@ mod tests {
 
     #[test]
     fn parse_contract_object_from_full_json() {
-        let raw = include_str!("../tests/fixtures/counter.json");
+        let raw = include_str!("../../tests/fixtures/counter.json");
         let contract = ContractAbi::load_from_full_json(raw);
         assert!(contract.bytecode.is_some());
         assert!(contract.abi.functions.contains_key("addAndSet"));
