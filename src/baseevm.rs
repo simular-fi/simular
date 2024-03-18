@@ -1,5 +1,4 @@
 use alloy_dyn_abi::{DynSolType, DynSolValue};
-use alloy_primitives::{Bytes, FixedBytes};
 use anyhow::Result;
 
 use ethers_providers::{Http, Provider};

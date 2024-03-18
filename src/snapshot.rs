@@ -1,5 +1,3 @@
-use alloy_primitives::FixedBytes;
-use hex;
 use revm::primitives::{Address, Bytes, U256};
 use serde::{Deserialize, Serialize};
 use std::collections::BTreeMap;

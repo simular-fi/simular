@@ -216,7 +216,6 @@ pub fn pyerr<T: Debug>(err: T) -> PyErr {
 /// Helper to convert strings to addresses.  String addresses are passed through
 /// from Python.
 ///
-/// There may be a 'to' and optional 'from' address passed as arguments
 fn str_to_address(caller: &str) -> Result<Address, PyErr> {
     let c = caller
         .parse::<Address>()
