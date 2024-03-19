@@ -1,5 +1,6 @@
 import pytest
 from pathlib import Path
+import json
 
 from simular import PyEvmLocal
 
@@ -41,3 +42,10 @@ def kitchen_sink_json():
     with open(f"{PATH}/./fixtures/KitchenSink.json") as f:
         rawabi = f.read()
     return rawabi
+
+
+@pytest.fixture
+def usdc_cache():
+    with open(f"{PATH}/./fixtures/usdc_cache.json") as f:
+        cache = f.read()
+    return cache

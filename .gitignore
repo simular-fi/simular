@@ -53,5 +53,8 @@ coverage.xml
 # Pyenv
 .python-version
 
+# Forkdb script
+tests/dump_usdc.py
+
 todo.md
 
