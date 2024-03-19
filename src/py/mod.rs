@@ -1,3 +1,5 @@
+///! The [`py`] module exposes the [`core`] code to the Python environment.
+///! It provides wrappers to the Evm and Abi parser.
 pub(crate) mod pyabi;
 pub(crate) mod pyevm;
 
