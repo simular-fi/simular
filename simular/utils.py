@@ -61,10 +61,9 @@ def contract_from_raw_abi(evm: PyEvmLocal | PyEvmFork, raw_abi: str) -> Contract
     """
     Create the contract given the full ABI as a str.
     """
-    if isinstance(raw_abi, str):
-        abi = PyAbi.load_from_json(raw_abi)
-    else:
+    if not isinstance(raw_abi, str):
         raise Exception("expected a an un-parsed json file")
+    abi = PyAbi.load_from_json(raw_abi)
     return Contract(evm, abi)
 
 
@@ -74,6 +73,8 @@ def contract_from_abi_bytecode(
     """
     Create a contract given the abi and bytcodes
     """
+    if not isinstance(raw_abi, str):
+        raise Exception("expected a an un-parsed json file")
     abi = PyAbi.load_from_parts(raw_abi, bytecode)
     return Contract(evm, abi)
 

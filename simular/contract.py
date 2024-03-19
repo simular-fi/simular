@@ -24,7 +24,7 @@ class Function:
 
     def call(self, *args):
         if not self.contract_address:
-            raise Exception("Missing contract address. see at() method")
+            raise Exception("missing contract address. see at() method")
 
         encoded, output_params = self.abi.encode_function_input(self.name, args)
         (bits, _) = self.client.call(self.contract_address, encoded)
@@ -33,10 +33,10 @@ class Function:
 
     def transact(self, *args, caller: str = None, value: int = 0):
         if not self.contract_address:
-            raise Exception("Missing contract address. see at() method")
+            raise Exception("missing contract address. see at() method")
 
         if not is_address(caller):
-            raise Exception("Caller is missing or not a valid address")
+            raise Exception("caller is missing or not a valid address")
 
         encoded, output_params = self.abi.encode_function_input(self.name, args)
         (bits, _) = self.client.transact(caller, self.contract_address, encoded, value)
@@ -71,7 +71,7 @@ class Contract:
         if self.abi.has_function(name):
             return Function(self.address, name, self.evm, self.abi)
         else:
-            raise Exception(f"Contract function: '{name}' not found!")
+            raise Exception(f"contract function: '{name}' not found!")
 
     def at(self, address: str) -> "Contract":
         """
@@ -88,7 +88,7 @@ class Contract:
         bytecode = self.abi.bytecode()
 
         if not constructor_params and len(args) > 0:
-            raise Exception("Constructor doesn't take any args")
+            raise Exception("constructor doesn't take any args")
 
         if constructor_params:
             if len(constructor_params) != len(args):

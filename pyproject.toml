@@ -1,7 +1,10 @@
 [project]
 name = "simular"
 requires-python = ">=3.11"
+
 classifiers = [
+    "Programming Language :: Python",
+    "Programming Language :: Python :: 3.11",
     "Programming Language :: Rust",
     "Programming Language :: Python :: Implementation :: CPython",
     "Programming Language :: Python :: Implementation :: PyPy",
@@ -10,15 +13,19 @@ classifiers = [
 [tool.poetry]
 name = "simular"
 version = "0.2.0"
-description = "smart-contract api and embedded ethereum virtual machine"
 authors = ["Dave Bryson"]
+license = "Apache-2.0"
+readme = "README.md"
+homepage = "https://github.com/simular-fi/simular"
+repository = "https://github.com/simular-fi/simular"
+documentation = "https://github.com/simular-fi/simular/docs/"
+keywords = ["agent-based modeling", "ethereum", "solidity", "simulation"]
+description = "smart-contract api and embedded ethereum virtual machine"
 
 [tool.poetry.dependencies]
 python = "^3.11"
 eth-abi = "^4.1.0"
 eth-utils = "^2.2.0"
-
-[tool.poetry.dev-dependencies]
 
 [tool.poetry.group.dev.dependencies]
 black = "^23.7.0"

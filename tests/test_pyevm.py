@@ -42,7 +42,7 @@ def test_transfer_and_dump_state(evm, bob, alice):
     assert evm2.get_balance(alice) == one_ether
 
 
-def test_contract_interaction(evm, bob, kitchen_sink_json):
+def test_contract_raw_interaction(evm, bob, kitchen_sink_json):
     abi = PyAbi.load_from_json(kitchen_sink_json)
     bytecode = abi.bytecode()
 

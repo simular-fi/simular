@@ -1,7 +1,4 @@
-from simular import (
-    PyEvmLocal,
-    contract_from_inline_abi,
-)
+from simular import contract_from_inline_abi
 
 FN_SIGS = [
     "function masterMinter() (address)",
@@ -21,8 +18,7 @@ M3 = "0x2864eef30c5a0e35793df921efa5ee85dd3d2e65"
 ALLOWANCE = 10000000
 
 
-def test_usdc_cached(usdc_cache):
-    evm = PyEvmLocal()
+def test_usdc_cached(evm, usdc_cache):
     evm.load_state(usdc_cache)
 
     usdc = contract_from_inline_abi(evm, FN_SIGS)
@@ -30,5 +26,6 @@ def test_usdc_cached(usdc_cache):
 
     assert usdc.isMinter.call(M1)
     assert ALLOWANCE == usdc.minterAllowance.call(M1)
+
     assert usdc.mint.transact(M1, 5000000, caller=M1)
     assert 5000000 == usdc.totalSupply.call()

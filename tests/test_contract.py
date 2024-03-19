@@ -1,12 +1,23 @@
 import pytest
 
 from simular import (
-    Contract,
     contract_from_abi_bytecode,
+    contract_from_raw_abi,
     create_account,
     PyEvmLocal,
     contract_from_inline_abi,
 )
+
+
+def test_loading_contracts(evm):
+    with pytest.raises(BaseException):
+        contract_from_raw_abi(evm, "")
+
+    with pytest.raises(BaseException):
+        contract_from_raw_abi(evm, {})
+
+    with pytest.raises(BaseException):
+        contract_from_abi_bytecode(evm, "", b"")
 
 
 def test_contract_interface(evm, bob, alice, erc20abi, erc20bin):
@@ -31,10 +42,9 @@ def test_contract_interface(evm, bob, alice, erc20abi, erc20bin):
         # alice can't mint, she's not the owner!
         erc20.mint.transact(alice, 10, caller=alice)
 
-    state = evm.dump_state()
-
+    # Test state
     evm2 = PyEvmLocal()
-    evm2.load_state(state)
+    evm2.load_state(evm.dump_state())
 
     erc20again = contract_from_inline_abi(evm2, ["function totalSupply() (uint256)"])
     erc20again.at(contract_address)
