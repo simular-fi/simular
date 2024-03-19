@@ -1,4 +1,6 @@
 
+# Simular
+
 A Python smart-contract API with a fast (embedded) Ethereum Virtual Machine (EVM). `Simular` creates a Python wrapper around production grade Rust based Ethereum APIs.
 
 How is it different than Brownie, Ganache, Anvil?
