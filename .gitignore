@@ -56,5 +56,8 @@ coverage.xml
 # Forkdb script
 tests/dump_usdc.py
 
+# Mdbook
+docs/book
+
 todo.md
 

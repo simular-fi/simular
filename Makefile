@@ -12,3 +12,6 @@ rust_tests:
 
 benchit:
 	poetry run python bench/simple.py
+
+docs: 
+	mdbook build docs/
