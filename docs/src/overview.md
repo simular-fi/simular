@@ -1,98 +1,19 @@
 
-A Python smart-contract API with a fast (embedded) Ethereum Virtual Machine (EVM). `Simular` creates a Python wrapper around production grade Rust based Ethereum APIs.
+**Simular** is a Python API you can use to deploy and interact with Ethereum smart contracts and an embedded Ethereum Virtual Machine (EVM). It creates a Python wrapper around production grade Rust based Ethereum APIs making it very fast.
 
 How is it different than Brownie, Ganache, Anvil?
-- It's only an EVM, no blocks or mining
+- It's only an EVM. It doesn't include blocks and mining
 - No HTTP/JSON-RPC. You talk directly to the EVM (and it's fast)
-- Full functionality: account transfers, contract interaction, etc...
+- Full functionality: account transfers, contract interaction, and more.
 
-The primary motivation for this work is to be able to model smart-contract interaction in an Agent Based Modeling environment like [Mesa](https://mesa.readthedocs.io/en/main/).
+The primary motivation for this work is to be able to model smart contract interaction in an Agent Based Modeling environment like [Mesa](https://mesa.readthedocs.io/en/main/).
 
 ## Features
 - `EVM`: run a local version with an in-memory database, or fork db state from a remote node.
 - `Snapshot`: dump the current state of the EVM to json for future use in pre-populating EVM storage
 - `ABI`: parse compiled Solidity json files or define a specific set of functions using `human-readable` notation
-- `Contract`: high-level, user-friendy Python API
+- `Contract/Utilities`: high-level, user-friendy Python API
 
-## Quick Example
-Deploy and interact with the classic `counter` smart contract.
-
-Sample Contract:
-```solidity
-// SPDX-License-Identifier: UNLICENSED
-pragma solidity ^0.8.13;
-
-import {ERC20} from "solmate/tokens/ERC20.sol";
-
-contract MockERC20 is ERC20 {
-    address public owner;
-
-    constructor(
-        string memory _name,
-        string memory _symbol,
-        uint8 _decimals
-    ) ERC20(_name, _symbol, _decimals) {
-        owner = msg.sender;
-    }
-
-    function mint(address to, uint256 value) public virtual {
-        require(msg.sender == owner, "not the owner");
-        _mint(to, value);
-    }
-
-    function burn(address from, uint256 value) public virtual {
-        require(msg.sender == owner, "not the owner");
-        _burn(from, value);
-    }
-}
-```
-
-```python
-    from simular import (
-        PyEvmLocal, 
-        create_many_accounts, 
-        contract_from_raw_abi,
-    )
-
-    # load contract abi from file
-    with open("./tests/fixtures/counter.json") as f:
-        counterabi = f.read()
-    
-    # Create an in-memory EVM client
-    client = PyEvmLocal()
-
-    # Create 2 accounts and fund each with 2 ether
-    [deployer, alice] = create_many_accounts(client, 2, 2)
-
-    # Create an instance of the contract
-    counter = contract_from_raw_abi(client, counterabi)
-
-    # Deploy to the EVM. Returns the address of the contract
-    address = counter.deploy(deployer)
-    assert is_address(counter.address)
-
-    # Contract functions are dynamically built from the ABI and
-    # attached to Contract.
-    #
-    # Call the 'setNumber' function on the contract.
-    # Alice is the 'from/msg.sender' address. `10` is an input argument to the `setNumber` function
-    # 'transact' is a write operation to the EVM
-    counter.setNumber.transact(10, caller=alice)
-
-    # Now call the 'number' function in the contract to check the state of public number state variable
-    # 'call' is a read operation to the EVM
-    result = counter.number.call()
-    assert result == 10
-```
-## Build from source
-- You need `Rust`, `Python/Poetry`, and optionally `Make`.
-- Create a local Python virtual environment.  With Poetry, run `poetry install`
-- Run `make build` or run `poetry run maturin develop`
-- See `simular/` for the main python api
-
-
-## Getting Started
-Link to github pages
 
 ## Standing on the shoulders of giants...
 Thanks to the following projects for making this work possible!

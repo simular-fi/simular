@@ -1,4 +1,4 @@
-# Sample workflow for building and deploying a mdBook site to GitHub Pages
+# Workflow for building and deploying a mdBook site to GitHub Pages
 #
 # To get started with mdBook see: https://rust-lang.github.io/mdBook/index.html
 #
@@ -37,11 +37,11 @@ jobs:
         id: pages
         uses: actions/configure-pages@v4
       - name: Build with mdBook
-        run: mdbook build
+        run: mdbook build docs/
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: ./book
+          path: ./docs/book
 
   # Deployment job
   deploy:
