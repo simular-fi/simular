@@ -23,7 +23,7 @@ The primary motivation for this work is to be able to model smart-contract inter
 - See `simular/` for the main python api
 
 ## Getting Started
-Link to github pages
+See [Simular Documentation](https://simular-fi.github.io/simular/) for examples and API details.
 
 ## Standing on the shoulders of giants...
 Thanks to the following projects for making this work possible!
