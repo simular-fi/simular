@@ -33,11 +33,6 @@ jobs:
   publish_test_pypi:
     runs-on: ubuntu-latest
     needs: [sdist]
-    environment:
-      name: testpypi
-      url: https://test.pypi.org/p/simular-evm
-    permissions:
-      id-token: write
     steps:
     - name: Download dists
       uses: actions/download-artifact@v4
@@ -48,7 +43,7 @@ jobs:
     - name: Publish to PyPI
         uses: messense/maturin-action@v1
         env:
-          MATURIN_TEST_PYPI_TOKEN: ${{ secrets.PYPI_API_TOKEN }}
+          MATURIN_PYPI_TOKEN: ${{ secrets.MATURIN_TEST_PYPI_TOKEN }}
         with:
           command: upload
           args: --skip-existing *
