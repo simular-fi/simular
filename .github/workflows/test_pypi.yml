@@ -35,7 +35,7 @@ jobs:
     needs: [sdist]
     environment:
       name: testpypi
-      url: https://test.pypi.org/project/simular-evm
+      url: https://test.pypi.org/p/simular-evm
     permissions:
       id-token: write
     steps:
