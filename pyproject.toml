@@ -1,7 +1,26 @@
+[build-system]
+requires = ["maturin>=1.1,<2.0"]
+build-backend = "maturin"
+
+[tool.maturin]
+features = ["pyo3/extension-module"]
+sdist-include = ["LICENSE", "README.md"]
+
+
 [project]
 name = "simular-evm"
+version = "0.2.0"
 requires-python = ">=3.11"
-
+authors = [
+    { name = "Dave Bryson", email = "davebryson@users.noreply.github.com" },
+]
+license = "Apache-2.0"
+readme = "README.md"
+homepage = "https://github.com/simular-fi/simular"
+repository = "https://github.com/simular-fi/simular"
+documentation = "https://github.com/simular-fi/simular/docs/"
+keywords = ["agent-based modeling", "ethereum", "solidity", "simulation"]
+description = "smart-contract api and embedded ethereum virtual machine"
 classifiers = [
     "Programming Language :: Python",
     "Programming Language :: Python :: 3.11",
@@ -10,33 +29,12 @@ classifiers = [
     "Programming Language :: Python :: Implementation :: PyPy",
 ]
 
-[tool.poetry]
-name = "simular-evm"
-version = "0.2.0"
-authors = ["Dave Bryson"]
-license = "Apache-2.0"
-readme = "README.md"
-homepage = "https://github.com/simular-fi/simular"
-repository = "https://github.com/simular-fi/simular"
-documentation = "https://github.com/simular-fi/simular/docs/"
-keywords = ["agent-based modeling", "ethereum", "solidity", "simulation"]
-description = "smart-contract api and embedded ethereum virtual machine"
+dependencies = ["eth-abi>=4.1.0", "eth-utils>=2.2.0"]
 
-[tool.poetry.dependencies]
-python = "^3.11"
-eth-abi = "^4.1.0"
-eth-utils = "^2.2.0"
+[tool.hatch.envs.dev]
+dependencies = ["pytest>=7.4.0", "black>=23.7.0", "maturin>=1.1.0"]
 
-[tool.poetry.group.dev.dependencies]
-black = "^23.7.0"
-pytest = "^7.4.0"
-maturin = "^1.1.0"
-tqdm = "^4.66.2"
-
-[tool.maturin]
-features = ["pyo3/extension-module"]
-sdist-include = ["LICENSE", "README.md"]
-
-[build-system]
-requires = ["maturin>=1.1,<2.0"]
-build-backend = "maturin"
+[project.urls]
+Source = "https://github.com/simular-fi/simular"
+Documentation = "https://simular-fi.github.io/simular"
+Issues = "https://github.com/simular-fi/simular/issues"
