@@ -96,7 +96,7 @@ jobs:
     needs: [linux, windows, macos, sdist]
     environment:
       name: pypi
-      url: https://pypi.org/p/simular
+      url: https://pypi.org/p/simular-evm
     permissions:
       id-token: write
     steps:
@@ -114,7 +114,7 @@ jobs:
     needs: [linux, windows, macos, sdist]
     environment:
       name: testpypi
-      url: https://test.pypi.org/p/simular
+      url: https://test.pypi.org/p/simular-evm
     permissions:
       id-token: write
     steps:
