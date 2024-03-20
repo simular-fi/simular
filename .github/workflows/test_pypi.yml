@@ -46,9 +46,5 @@ jobs:
         merge-multiple: true
         path: dist/
     - name: Publish distribution 📦 to PyPI
-      uses: messense/maturin-action@v1
-      env:
-          MATURIN_TEST_PYPI_TOKEN: ${{ secrets.PYPI_API_TOKEN }}
-        with:
-          command: upload
-          args: --skip-existing *
+      uses: pypa/gh-action-pypi-publish@v1.8.14
+
