@@ -11,7 +11,7 @@ Both versions are a Python class wrapper of the [REVM](https://github.com/blueal
 - [PyEvm API](#pyevm-api)
   - [Import](#import)
   - [Constructor](#constructor)
-  - [Shared methods](#shared-methods)
+  - [Common methods](#common-methods)
     - [get\_balance](#get_balance)
     - [create\_account](#create_account)
     - [transfer](#transfer)
@@ -20,6 +20,8 @@ Both versions are a Python class wrapper of the [REVM](https://github.com/blueal
     - [call](#call)
     - [dump\_state](#dump_state)
     - [view\_storage\_slot](#view_storage_slot)
+  - [PyEVMLocal](#pyevmlocal)
+    - [load\_state](#load_state)
 
 ## Import
 ```python
@@ -27,16 +29,20 @@ from simular import PyEvmLocal, PyEvmFork
 ```
 
 ## Constructor
+  
+Create an instance of the EVM with in-memory storage.
 
-Create an instance of the EVM.
+**PyEvmLocal()**
+
+Create an instance of the EVM with in-memory storage and the ability to pull state from a remote node.
+
+**PyEvmFork(url: str)** : 
+
+**Parameters:** 
+- `url` : The HTTP address of an Ethereum json-rpc endpoint.  Services such as `Infura` and `Alchemy` provide access to json-rpc endpoints
 
 
-* **PyEvmLocal()** : takes no parameters
-* **PyEvmFork(url="http//...")** : 
-    - **parameters:** `url` : the http address to an Ethereum json-rpc endpoint.  Services such as `Infura` and `Alchemy` provide access to a json-rpc endpoint
-
-
-## Shared methods
+## Common methods
 Both versions share the following methods:
 
 ### get_balance
@@ -162,7 +168,7 @@ evm.call('0x11..', b'661..')
 ```
 
 ### dump_state
-Export the current state of the EVM to a JSON encoded string
+Export the current state (snapshot) of the EVM to a JSON encoded string
 
 ```python
 def dump_state(self) -> str
@@ -195,6 +201,33 @@ Example:
 evm = PyEvmLocal()
 value = evm.view_storage_slot('0x11...', 1)
 ```
+
+## PyEVMLocal
+`PyEVMLocal` has one additional method:
+
+### load_state
+Load state into the EVM from a snapshot. See [dump_state](#dump_state).
+
+```python
+def load_state(self, snapshot: str)
+```
+**Parameters**:
+- snapshot: the json file produced by `dump_state()`
+
+Example:
+```python
+evm = PyEvmLocal()
+
+with open('snapshot.json') as f:
+  snap = f.read()
+
+evm.dump_state(snap)
+```
+
+
+
+
+
 
 
 

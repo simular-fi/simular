@@ -6,7 +6,7 @@ src = "src"
 title = "Simular Documentation"
 
 [output.html]
-default-theme = "Ayu"
+default-theme = "light"
 git-repository-url = "https://github.com/simular-fi/simular"
 git-repository-icon = "fa-github"
 

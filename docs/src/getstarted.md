@@ -43,7 +43,7 @@ assert evm.get_balance(alice) == to_wei(1, "ether")
 ```
 
 ### Deploy and interact with a Contract
-Here how you can deploy and interact with a simple Contract
+Here's how you can deploy and interact with a simple Contract
 
 For this example, we'll use the following smart contract:
 ```javascript
