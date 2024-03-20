@@ -1,4 +1,4 @@
-name: build-and-release
+name: test_pypi
 
 on:
   workflow_dispatch
