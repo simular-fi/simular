@@ -1,1 +1,2 @@
 # Contract API
+Provides a wrapper around [PyEvm](./pyevm.md) and [PyAbi](./pyabi.md) and is the easiest way to interact with Contracts.  Solidity contract methods are extracted from the ABI and made available as attributes on the instance of the Contract.   
