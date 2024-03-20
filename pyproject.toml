@@ -1,5 +1,5 @@
 [project]
-name = "simular"
+name = "simular-evm"
 requires-python = ">=3.11"
 
 classifiers = [
@@ -11,7 +11,7 @@ classifiers = [
 ]
 
 [tool.poetry]
-name = "simular"
+name = "simular-evm"
 version = "0.2.0"
 authors = ["Dave Bryson"]
 license = "Apache-2.0"
