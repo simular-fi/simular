@@ -21,8 +21,8 @@ jobs:
         target: [x86_64, x86, armv7]
     needs: [check_main]
     steps:
-      - name: install make?
-        run: sudo apt install make -y
+      - name: install extras?
+        run: sudo apt install libssl-dev -y
       - uses: actions/checkout@v4
       - name: Build wheels
         uses: PyO3/maturin-action@v1
