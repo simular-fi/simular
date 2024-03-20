@@ -115,21 +115,3 @@ jobs:
         path: dist/
     - name: Publish distribution 📦 to PyPI
       uses: pypa/gh-action-pypi-publish@v1.8.14
-
-  publish_test_pypi:
-    runs-on: ubuntu-latest
-    needs: [linux, windows, macos, sdist]
-    environment:
-      name: testpypi
-      url: https://test.pypi.org/p/simular-evm
-    permissions:
-      id-token: write
-    steps:
-    - name: Download dists
-      uses: actions/download-artifact@v4
-      with:
-        pattern: wheels-*
-        merge-multiple: true
-        path: dist/
-    - name: Publish distribution 📦 to PyPI
-      uses: pypa/gh-action-pypi-publish@v1.8.14
