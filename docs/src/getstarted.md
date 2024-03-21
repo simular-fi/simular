@@ -4,7 +4,7 @@ Simular can be installed via PyPi (LINK TO THE PYPI Page).  It requires a Python
 
 **Install:**
 ```bash
-pip install simular
+pip install simular-evm
 ```
 ## Examples
 
