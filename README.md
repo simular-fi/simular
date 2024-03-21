@@ -19,9 +19,9 @@ The primary motivation for this work is to be able to model smart-contract inter
 - `Contract`: high-level, user-friendy Python API
 
 ## Build from source
-- You need `Rust`, `Python/Poetry`, and optionally `Make`.
-- Create a local Python virtual environment.  With Poetry, run `poetry install`
-- Run `make build` or run `poetry run maturin develop`
+- You need `Rust` and `Python`, and optionally `Make`. We use `hatch` for Python project management, but it's not required
+- Create a local Python virtual environment. Within that environment install Python dependencies
+- Run `make build` or `hatch run maturin develop`
 - See `simular/` for the main python api
 
 ## Getting Started

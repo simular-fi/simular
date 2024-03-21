@@ -2,6 +2,15 @@
 
 Utilities defines several 'helper' functions to create contracts and accounts.
 
+- [Utility Functions](#utility-functions)
+  - [Functions](#functions)
+    - [generate\_random address](#generate_random-address)
+    - [create\_account](#create_account)
+    - [create\_many\_accounts](#create_many_accounts)
+    - [contract\_from\_raw\_abi](#contract_from_raw_abi)
+    - [contract\_from\_abi\_bytecode](#contract_from_abi_bytecode)
+    - [contract\_from\_inline\_abi](#contract_from_inline_abi)
+
 ## Functions
 
 ### generate_random address

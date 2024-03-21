@@ -7,7 +7,7 @@ function hello(address caller) public returns (bool){}
 
 function world(string name) view (string) 
 ```
-Those methods will be automatically available in the instance of the Contract like this:
+they will be automatically available in the instance of the Contract like this:
 
 ```python
 # write call to the hello method
@@ -32,7 +32,13 @@ Each method name is an attribute on the instance of Contract.  To invoke them, y
 .call(*args)
 ```
 
-Under the covers, Contract knows how to properly encode the call to the EVM, and likewise decode any return values.
+Under the covers, a Contract knows how to properly encode all interactions with the EVM, and likewise decode any return values.
+
+- [Contract API](#contract-api)
+  - [Constructor](#constructor)
+  - [Methods](#methods)
+    - [at](#at)
+    - [deploy](#deploy)
 
 ## Constructor
 Create an instance of a Contract from an ABI.

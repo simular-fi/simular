@@ -1,13 +1,12 @@
 # Getting Started
 
-Simular can be installed via PyPi (LINK TO THE PYPI Page).  It requires a Python version of `>=3.11`.
+Simular can be installed via [PyPi](https://pypi.org/project/simular-evm/).  It requires a Python version of `>=3.11`.
 
 **Install:**
 ```bash
 pip install simular-evm
 ```
 ## Examples
-
 Here are a few quick examples that demonstrate the API. You can find more details on the API in the **Reference Guide** section.
 
 ### Transfer Ether between accounts
@@ -108,4 +107,4 @@ assert counter.increment.transact(1, caller=bob)
 assert 1 == counter.number.call()
 ```
 
-See **Reference Guide** for more API details.
+See [Reference Guide](./reference/contract.md) for more API details.
