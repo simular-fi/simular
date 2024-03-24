@@ -118,6 +118,7 @@ class Contract:
         Returns the address of the deployed contract
         """
         constructor_params = self.abi.constructor_input_types()
+
         bytecode = self.abi.bytecode()
 
         if not constructor_params and len(args) > 0:

@@ -49,3 +49,14 @@ def test_contract_interface(evm, bob, alice, erc20abi, erc20bin):
     erc20again = contract_from_inline_abi(evm2, ["function totalSupply() (uint256)"])
     erc20again.at(contract_address)
     assert 10 == erc20again.totalSupply.call()
+
+
+def test_deploy_with_no_constructor_args(evm, alice, kitchen_sink_json):
+    create_account(evm, alice, 0)
+    a = contract_from_raw_abi(evm, kitchen_sink_json)
+
+    # fail on value with a non-payable constructor
+    with pytest.raises(BaseException):
+        a.deploy(alice, value=1)
+
+    assert a.deploy(alice)
