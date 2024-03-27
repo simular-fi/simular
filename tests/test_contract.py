@@ -51,8 +51,8 @@ def test_contract_interface(evm, bob, alice, erc20abi, erc20bin):
     assert 10 == erc20again.totalSupply.call()
 
 
-def test_deploy_with_no_constructor_args(evm, alice, kitchen_sink_json):
-    create_account(evm, alice, 0)
+def test_deploy_and_test_kitchensink(evm, alice, kitchen_sink_json):
+    create_account(evm, alice, 2)
     a = contract_from_raw_abi(evm, kitchen_sink_json)
 
     # fail on value with a non-payable constructor
@@ -60,3 +60,16 @@ def test_deploy_with_no_constructor_args(evm, alice, kitchen_sink_json):
         a.deploy(caller=alice, value=1)
 
     assert a.deploy(caller=alice)
+
+    assert 1 == a.increment.transact(caller=alice)
+    assert [2, 3] == a.increment.transact(2, caller=alice)
+    assert 4 == a.increment.simulate(caller=alice)
+    assert 3 == a.value.call()
+    assert alice == a.setInput.transact((1, 2, alice), caller=alice)
+
+    # receive
+    one_ether = int(1e18)
+    assert 0 == evm.get_balance(a.address)
+    evm.transfer(alice, a.address, one_ether)
+    assert one_ether == evm.get_balance(alice)
+    assert one_ether == evm.get_balance(a.address)
