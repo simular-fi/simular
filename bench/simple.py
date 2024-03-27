@@ -4,7 +4,7 @@ from pathlib import Path
 from simular import PyEvmLocal, Contract, create_account, contract_from_raw_abi
 
 PATH = Path(__file__).parent
-NUM_TX = 15000
+NUM_TX = 200_000
 
 
 def how_fast():
@@ -15,7 +15,7 @@ def how_fast():
     deployer = create_account(client, value=2)
 
     counter = contract_from_raw_abi(client, abi)
-    counter.deploy(deployer)
+    counter.deploy(caller=deployer)
 
     start_time = time.perf_counter()
 
