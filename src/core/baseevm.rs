@@ -1,5 +1,6 @@
 use alloy_dyn_abi::{DynSolType, DynSolValue};
 use anyhow::Result;
+use ethers_core::types::BlockId;
 use ethers_providers::{Http, Provider};
 use revm::{
     db::{CacheDB, EthersDB, InMemoryDB},
@@ -20,15 +21,19 @@ pub struct BaseEvm<DB: Database + DatabaseCommit> {
 }
 
 impl BaseEvm<ForkDb> {
-    pub fn create(url: &str) -> Self {
+    pub fn create(url: &str, block_number: Option<u64>) -> Self {
         let client =
-            Provider::<Http>::try_from(url).expect("failed to load HTTP provider for forkdb");
+            Provider::<Http>::try_from(url).expect("Failed to load HTTP provider for forkdb");
         let client = Arc::new(client);
-        let ethersdb = EthersDB::new(
-            Arc::clone(&client), // public infura mainnet
-            None,
-        )
-        .expect("failed to load ethersdb for forkdb");
+
+        let bn: Option<BlockId> = if block_number.is_some() {
+            Some(BlockId::from(block_number.unwrap()))
+        } else {
+            None
+        };
+
+        let ethersdb =
+            EthersDB::new(Arc::clone(&client), bn).expect("Failed to load ethersdb for forkdb");
 
         // Using EthersDb with CacheDB for a ForkDb
         let cache_db = CacheDB::new(ethersdb);
@@ -443,5 +448,13 @@ mod tests {
 
         // nothing to xfer, caller has no balance
         assert!(evm.transfer(a, b, U256::from(1e18)).is_err());
+    }
+
+    #[test]
+    fn block_number() {
+        use ethers_core::types::BlockId;
+
+        let bid = BlockId::from(10001u64);
+        println!("{:?}", bid);
     }
 }

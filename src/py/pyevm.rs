@@ -143,11 +143,13 @@ implement_common_functions!(PyEvmFork);
 #[pymethods]
 impl PyEvmFork {
     /// Create an instance. `url` should be a valid URL to
-    /// an Evm json-rpc endpoint.
+    /// an Evm json-rpc endpoint. `block_number` is an option
+    /// number of the block to fork from.  `latest` will be
+    /// used as default.
     #[new]
-    #[pyo3(signature = (url))]
-    pub fn new(url: &str) -> Self {
-        Self(BaseEvm::<ForkDb>::create(url))
+    #[pyo3(signature = (url, block_number=None))]
+    pub fn new(url: &str, block_number: Option<u64>) -> Self {
+        Self(BaseEvm::<ForkDb>::create(url, block_number))
     }
 }
 
