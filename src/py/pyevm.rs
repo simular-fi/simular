@@ -1,85 +1,112 @@
-use pyo3::prelude::*;
+use alloy_dyn_abi::DynSolValue;
+use core::ffi::c_uchar;
+use pyo3::{ffi, prelude::*};
 use revm::{db::InMemoryDB, primitives::U256};
 
-use super::{pyerr, str_to_address};
-use crate::core::baseevm::{BaseEvm, ForkDb};
-use crate::core::snapshot::SerializableState;
+use crate::{
+    core::{baseevm::BaseEvm, baseevm::ForkDb, snapshot::SerializableState},
+    py::{pyabi::PyAbi, str_to_address},
+};
 
-/// Macro that implements common function across implementations
 macro_rules! implement_common_functions {
     ($name: ident) => {
         #[pymethods]
         impl $name {
-            /// Create an account in the Evm DB for the given address and optional amount.
-            pub fn create_account(&mut self, address: &str, amount: Option<u128>) -> PyResult<()> {
+            pub fn create_account(
+                &mut self,
+                address: &str,
+                amount: Option<u128>,
+            ) -> anyhow::Result<()> {
                 let caller = str_to_address(address)?;
                 let value = amount.and_then(|v| Some(U256::from(v)));
-                self.0.create_account(caller, value).map_err(|e| pyerr(e))
+                self.0.create_account(caller, value)
             }
 
             /// Return the balance for the given address
-            pub fn get_balance(&mut self, caller: &str) -> PyResult<u128> {
+            pub fn get_balance(&mut self, caller: &str) -> anyhow::Result<u128> {
                 let caller = str_to_address(caller)?;
-                let v = self.0.get_balance(caller).map_err(|e| pyerr(e))?;
+                let v = self.0.get_balance(caller)?;
                 Ok(v.to::<u128>())
             }
 
-            /// Transfer the amount of value from `caller` to the given recipient `to`.
-            pub fn transfer(&mut self, caller: &str, to: &str, amount: u128) -> PyResult<u64> {
-                let a = str_to_address(caller)?;
-                let b = str_to_address(to)?;
-                let value = U256::try_from(amount).map_err(|e| pyerr(e))?;
-                self.0.transfer(a, b, value).map_err(|e| pyerr(e))
-            }
-
-            /// Deploy a contract
             pub fn deploy(
                 &mut self,
+                args: &str,
                 caller: &str,
-                bincode: Vec<u8>,
                 value: u128,
-            ) -> PyResult<String> {
+                abi: &PyAbi,
+            ) -> anyhow::Result<String> {
                 let a = str_to_address(caller)?;
-                let v = U256::try_from(value).map_err(|e| pyerr(e))?;
-                let addy = self.0.deploy(a, bincode, v).map_err(|e| pyerr(e))?;
-
-                Ok(format!("{:?}", addy))
+                let v = U256::try_from(value)?;
+                let (bits, _is_payable) = abi.encode_constructor(args)?;
+                let addy = self.0.deploy(a, bits, v)?;
+                Ok(addy.to_string())
             }
 
-            /// Write operation to a contract at the given address `to`.
             pub fn transact(
+                &mut self,
+                fn_name: &str,
+                args: &str,
+                caller: &str,
+                to: &str,
+                value: u128,
+                abi: &PyAbi,
+                py: Python<'_>,
+            ) -> anyhow::Result<PyObject> {
+                let a = str_to_address(caller)?;
+                let b = str_to_address(to)?;
+                let v = U256::try_from(value)?;
+
+                let (calldata, _is_payable, decoder) = abi.encode_function(fn_name, args)?;
+                let (output, _) = self.0.transact(a, b, calldata, v)?;
+                let dynvalues = decoder.0.abi_decode_params(&output)?;
+                let dsm = DynSolMap(dynvalues.clone());
+                Ok(dsm.into_py(py))
+            }
+
+            pub fn call(
+                &mut self,
+                fn_name: &str,
+                args: &str,
+                to: &str,
+                abi: &PyAbi,
+                py: Python<'_>,
+            ) -> anyhow::Result<PyObject> {
+                let a = str_to_address(to)?;
+                let (calldata, _is_payable, decoder) = abi.encode_function(fn_name, args)?;
+                let (output, _) = self.0.call(a, calldata)?;
+                let dynvalues = decoder.0.abi_decode_params(&output)?;
+                let dsm = DynSolMap(dynvalues.clone());
+                Ok(dsm.into_py(py))
+            }
+
+            pub fn transfer(
                 &mut self,
                 caller: &str,
                 to: &str,
-                data: Vec<u8>,
-                value: u128,
-            ) -> PyResult<(Vec<u8>, u64)> {
+                amount: u128,
+            ) -> anyhow::Result<u64> {
                 let a = str_to_address(caller)?;
                 let b = str_to_address(to)?;
-                let v = U256::try_from(value).map_err(|e| pyerr(e))?;
-                self.0.transact(a, b, data, v).map_err(|e| pyerr(e))
+                let value = U256::try_from(amount)?;
+                self.0.transfer(a, b, value)
             }
 
-            /// Read operation to a contract at the given address `to`.
-            pub fn call(&mut self, to: &str, data: Vec<u8>) -> PyResult<(Vec<u8>, u64)> {
-                let a = str_to_address(to)?;
-                self.0.call(a, data).map_err(|e| pyerr(e))
-            }
-
-            /// Dump the current state of the Evm DB to a json encoded String.
-            pub fn dump_state(&mut self) -> PyResult<String> {
-                let r = self.0.dump_state().map_err(|e| pyerr(e))?;
-                serde_json::to_string_pretty(&r).map_err(|e| pyerr(e))
+            pub fn dump_state(&mut self) -> anyhow::Result<String> {
+                let r = self.0.dump_state()?;
+                let x = serde_json::to_string_pretty(&r)?;
+                Ok(x)
             }
 
             /// View the value of a specific storage slot for a given contract.
-            pub fn view_storage_slot(&mut self, address: &str, index: u128) -> PyResult<Vec<u8>> {
+            pub fn view_storage_slot(
+                &mut self,
+                address: &str,
+                index: u128,
+            ) -> anyhow::Result<Vec<u8>> {
                 let location = str_to_address(address)?;
-                let idx = U256::try_from(index).map_err(|e| pyerr(e))?;
-                let r = self
-                    .0
-                    .view_storage_slot(location, idx)
-                    .map_err(|e| pyerr(e))?;
+                let idx = U256::try_from(index)?;
+                let r = self.0.view_storage_slot(location, idx)?;
                 Ok(r.to_le_bytes_vec())
             }
         }
@@ -106,7 +133,6 @@ impl PyEvmFork {
     }
 }
 
-/// An Evm with in-memory only support
 #[pyclass]
 pub struct PyEvmLocal(BaseEvm<InMemoryDB>);
 
@@ -120,9 +146,52 @@ impl PyEvmLocal {
     }
 
     /// Load state from dumped state. `raw` is a String, the unparsed json file.
-    pub fn load_state(&mut self, raw: &str) -> PyResult<()> {
-        let state: SerializableState = serde_json::from_str(raw).map_err(|e| pyerr(e))?;
+    pub fn load_state(&mut self, raw: &str) -> anyhow::Result<()> {
+        let state: SerializableState = serde_json::from_str(raw)?;
         self.0.load_state(state);
         Ok(())
+    }
+}
+
+// *** Helpers to convert DynSolValues to PyObject *** //
+
+fn walk_list(values: Vec<DynSolValue>, py: Python<'_>) -> PyObject {
+    values
+        .into_iter()
+        .map(|dv| base_exctract(dv, py))
+        .collect::<Vec<_>>()
+        .into_py(py)
+}
+
+fn base_exctract(dv: DynSolValue, py: Python<'_>) -> PyObject {
+    match dv {
+        DynSolValue::Address(a) => format!("{a:?}").into_py(py),
+        DynSolValue::Bool(a) => a.into_py(py),
+        DynSolValue::String(a) => a.into_py(py),
+        DynSolValue::Tuple(a) => walk_list(a, py),
+        DynSolValue::Int(a, _) => a.as_i64().into_py(py),
+        DynSolValue::Uint(a, _) => {
+            let bytes = a.as_le_bytes();
+            // put on your life jacket we're entering 'unsafe' waters
+            // ...adapted from ruint pyo3 extension
+            unsafe {
+                let obj =
+                    ffi::_PyLong_FromByteArray(bytes.as_ptr().cast::<c_uchar>(), bytes.len(), 1, 0);
+                PyObject::from_owned_ptr(py, obj)
+            }
+        }
+        DynSolValue::Bytes(a) => a.into_py(py),
+        DynSolValue::FixedBytes(a, _) => a.to_vec().into_py(py),
+        DynSolValue::Array(a) => walk_list(a, py),
+        DynSolValue::FixedArray(a) => walk_list(a, py),
+        _ => unimplemented!(),
+    }
+}
+
+pub struct DynSolMap(DynSolValue);
+
+impl IntoPy<PyObject> for DynSolMap {
+    fn into_py(self, py: Python<'_>) -> PyObject {
+        base_exctract(self.0, py)
     }
 }

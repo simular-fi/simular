@@ -26,7 +26,7 @@ def test_contract_interface(evm, bob, alice, erc20abi, erc20bin):
 
     erc20 = contract_from_abi_bytecode(evm, erc20abi, erc20bin)
 
-    erc20.deploy(bob, ("USD Coin", "USDC", 6))
+    erc20.deploy("USD Coin", "USDC", 6, caller=bob)
     contract_address = erc20.address
 
     assert erc20.name.call() == "USD Coin"
@@ -57,6 +57,6 @@ def test_deploy_with_no_constructor_args(evm, alice, kitchen_sink_json):
 
     # fail on value with a non-payable constructor
     with pytest.raises(BaseException):
-        a.deploy(alice, value=1)
+        a.deploy(caller=alice, value=1)
 
-    assert a.deploy(alice)
+    assert a.deploy(caller=alice)

@@ -2,11 +2,17 @@
 Wraps pyo3 code to provide a high-level contract API
 """
 
-from eth_abi import encode, decode
 from eth_utils import is_address
 import typing
 
-from .simular import PyEvmLocal, PyAbi, PyEvmFork
+from .simular import PyEvmLocal, PyEvmFork, PyAbi
+
+
+def convert_for_soltypes(args: typing.Tuple):
+    if len(args) == 1:
+        i = str(args[0]).replace("'", "")
+        return f"({i})"
+    return str(args).replace("'", "")
 
 
 class Function:
@@ -15,14 +21,10 @@ class Function:
     """
 
     def __init__(
-        self,
-        contract_address: str,
-        name: str,
-        client: PyEvmLocal | PyEvmLocal,
-        abi: PyAbi,
+        self, evm: PyEvmLocal | PyEvmFork, abi: PyAbi, contract_address: str, name: str
     ):
         self.name = name
-        self.client = client
+        self.evm = evm
         self.abi = abi
         self.contract_address = contract_address
 
@@ -38,10 +40,11 @@ class Function:
         if not self.contract_address:
             raise Exception("missing contract address. see at() method")
 
-        encoded, output_params = self.abi.encode_function_input(self.name, args)
-        (bits, _) = self.client.call(self.contract_address, encoded)
-
-        return self.__decode_output(output_params, bytes(bits))
+        stargs = convert_for_soltypes(args)
+        result = self.evm.call(self.name, stargs, self.contract_address, self.abi)
+        if len(result) == 1:
+            return result[0]
+        return result
 
     def transact(self, *args, caller: str = None, value: int = 0):
         """
@@ -57,20 +60,13 @@ class Function:
         if not is_address(caller):
             raise Exception("caller is missing or is not a valid address")
 
-        encoded, output_params = self.abi.encode_function_input(self.name, args)
-        (bits, _) = self.client.transact(caller, self.contract_address, encoded, value)
-        return self.__decode_output(output_params, bytes(bits))
-
-    def __decode_output(self, params: typing.List[str], rawbits: bytes):
-        """
-        internal. Decodes the resulting bytes from the Evm into respective Python value(s)
-        based on the output type parameters of the Solidity function.
-        """
-        decoded = decode(params, rawbits)
-        if len(decoded) == 1:
-            return decoded[0]
-        else:
-            return decoded
+        stargs = convert_for_soltypes(args)
+        result = self.evm.transact(
+            self.name, stargs, caller, self.contract_address, value, self.abi
+        )
+        if len(result) == 1:
+            return result[0]
+        return result
 
 
 class Contract:
@@ -96,7 +92,7 @@ class Contract:
         you can invoke it by name: contract.hello.transact(10)
         """
         if self.abi.has_function(name):
-            return Function(self.address, name, self.evm, self.abi)
+            return Function(self.evm, self.abi, self.address, name)
         else:
             raise Exception(f"contract function: '{name}' not found!")
 
@@ -109,7 +105,7 @@ class Contract:
         self.address = address
         return self
 
-    def deploy(self, caller: str, args=[], value: int = 0) -> str:
+    def deploy(self, *args, caller: str = None, value: int = 0) -> str:
         """
         Deploy the contract, returning it's deployed address
         - `caller`: the address of the requester...`msg.sender`
@@ -117,18 +113,25 @@ class Contract:
         - `value`: optional amount of Ether for the contract
         Returns the address of the deployed contract
         """
-        constructor_params = self.abi.constructor_input_types()
+        # constructor_params = self.abi.constructor_input_types()
 
-        bytecode = self.abi.bytecode()
+        # bytecode = self.abi.bytecode()
 
-        if not constructor_params and len(args) > 0:
-            raise Exception("constructor doesn't take any args")
+        # if not constructor_params and len(args) > 0:
+        #    raise Exception("constructor doesn't take any args")
 
-        if constructor_params:
-            if len(constructor_params) != len(args):
-                raise Exception("wrong number of args for the constructor")
-            bytecode += encode(constructor_params, args)
+        # if constructor_params:
+        #    if len(constructor_params) != len(args):
+        #        raise Exception("wrong number of args for the constructor")
+        #    bytecode += encode(constructor_params, args)
 
-        addr = self.evm.deploy(caller, bytecode, value)
+        if not caller:
+            raise Exception("Missing required 'caller' address")
+
+        if not is_address(caller):
+            raise Exception("'caller' is not a valid ethereum address")
+
+        stargs = convert_for_soltypes(args)
+        addr = self.evm.deploy(stargs, caller, value, self.abi)
         self.address = addr
         return addr

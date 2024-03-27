@@ -1,6 +1,7 @@
 use alloy_dyn_abi::{DynSolType, DynSolValue, ResolveSolType};
-use alloy_json_abi::{ContractObject, Function, JsonAbi};
+use alloy_json_abi::{ContractObject, Function, JsonAbi, StateMutability};
 use alloy_primitives::Bytes;
+use anyhow::{anyhow, bail, Result};
 
 pub struct ContractAbi {
     pub abi: JsonAbi,
@@ -24,6 +25,14 @@ impl ContractAbi {
         Self {
             abi,
             bytecode: Some(bytecode.into()),
+        }
+    }
+
+    pub fn load_from_only_abi(raw: &str) -> Self {
+        let abi = serde_json::from_str::<JsonAbi>(raw).expect("parsing abi input");
+        Self {
+            abi,
+            bytecode: None,
         }
     }
 
@@ -54,86 +63,89 @@ impl ContractAbi {
         self.bytecode.as_ref().map(|b| b.to_vec())
     }
 
-    /// Return the constructor input types (if any) to be used for
-    /// encoding when deploying a contract.
-    pub fn constructor_input_types(&self) -> Option<Vec<String>> {
-        self.abi.constructor.as_ref().map(|c| {
-            c.inputs
-                .iter()
-                .map(|entry| entry.ty.to_string())
-                .collect::<Vec<String>>()
-        })
-    }
-
-    pub fn encode_function_input(
-        &self,
-        name: &str,
-        args: Option<DynSolValue>,
-    ) -> anyhow::Result<(Vec<u8>, Vec<String>)> {
-        let func = self
-            .abi
-            .function(name)
-            .and_then(|f| {
-                f.iter()
-                    .find(|func| find_function_by_input(func, args.clone()))
-            })
-            .ok_or(anyhow::anyhow!("Function not found"))?;
-
-        // abi encode the input arguments
-        let encoded_input_args = match args {
-            Some(v) => v.abi_encode_params(),
-            None => vec![],
+    pub fn encode_constructor(&self, args: &str) -> Result<(Vec<u8>, bool)> {
+        let bytecode = match self.bytecode() {
+            Some(b) => b,
+            _ => bail!("Missing contract bytecode!"),
         };
 
-        let encoded_call = func
-            .selector()
-            .iter()
-            .copied()
-            .chain(encoded_input_args)
-            .collect::<Vec<u8>>();
+        let constructor = match &self.abi.constructor {
+            Some(c) => c,
+            _ => return Ok((bytecode, false)),
+        };
 
-        let output_params = func
-            .outputs
+        let types = constructor
+            .inputs
             .iter()
-            .map(|p| p.ty.clone())
+            .map(|i| i.resolve().unwrap())
             .collect::<Vec<_>>();
 
-        Ok((encoded_call, output_params))
-    }
-}
+        let ty = DynSolType::Tuple(types);
+        let dynavalues = ty.coerce_str(args).map_err(|_| anyhow!("HERE error..."))?;
+        let encoded_args = dynavalues.abi_encode_params();
+        let is_payable = match constructor.state_mutability {
+            StateMutability::Payable => true,
+            _ => false,
+        };
 
-/// Find the first function that matches 'args' (input parameters)
-fn find_function_by_input(func: &&Function, args: Option<DynSolValue>) -> bool {
-    // no args, verify the function expects no inputs
-    if args.is_none() {
-        return func.inputs.is_empty();
-    }
-
-    // we have args... check the function is expecting inputs
-    if func.inputs.is_empty() {
-        return false;
+        Ok(([bytecode, encoded_args].concat(), is_payable))
     }
 
-    // resolve the function's input params to DynSolTypes
-    let resolved_input_params = func
-        .inputs
-        .iter()
-        .map(|i| i.resolve().expect("failed to resolve to DynSolType"))
-        .collect::<Vec<_>>();
+    fn extract(funcs: &Function, args: &str) -> Result<DynSolValue> {
+        let types = funcs
+            .inputs
+            .iter()
+            .map(|i| i.resolve().unwrap())
+            .collect::<Vec<_>>();
+        let ty = DynSolType::Tuple(types);
+        ty.coerce_str(args)
+            .map_err(|_| anyhow!("Error coercing the arguments for the function call"))
+    }
 
-    let param_type = match resolved_input_params.len() {
-        1 => resolved_input_params[0].clone(),
-        _ => DynSolType::Tuple(resolved_input_params),
-    };
+    pub fn encode_function(
+        &self,
+        name: &str,
+        args: &str,
+    ) -> anyhow::Result<(Vec<u8>, bool, DynSolType)> {
+        let funcs = match self.abi.function(name) {
+            Some(funcs) => funcs,
+            _ => bail!("Function {} not found in the ABI!", name),
+        };
 
-    // validate the input args match the required parameter types
-    param_type.matches(&args.unwrap())
+        for f in funcs {
+            let result = Self::extract(f, args);
+            let is_payable = match f.state_mutability {
+                StateMutability::Payable => true,
+                _ => false,
+            };
+            // find the first function that matches the input args
+            if result.is_ok() {
+                let types = f
+                    .outputs
+                    .iter()
+                    .map(|i| i.resolve().unwrap())
+                    .collect::<Vec<_>>();
+                let ty = DynSolType::Tuple(types);
+                let selector = f.selector().to_vec();
+                let encoded_args = result.unwrap().abi_encode_params();
+                let all = [selector, encoded_args].concat();
+
+                return Ok((all, is_payable, ty));
+            }
+        }
+
+        // if we get here, it means we didn't find a function that
+        // matched the input arguments
+        Err(anyhow::anyhow!(
+            "Arguments to the function do not match what is expected"
+        ))
+    }
 }
 
 #[cfg(test)]
 mod tests {
-    use alloy_dyn_abi::DynSolValue;
-    use alloy_primitives::{Address, U256};
+    use alloy_dyn_abi::DynSolType;
+    use alloy_primitives::Address;
 
     use super::ContractAbi;
 
@@ -152,19 +164,20 @@ mod tests {
                 == 0
         );
 
-        let (enc, out) = contract.encode_function_input("hello", None).unwrap();
+        let (enc, _, out) = contract.encode_function("hello", "()").unwrap();
         assert!(enc.len() > 0);
-        assert!(out.len() == 1);
+        assert_eq!(out, DynSolType::Tuple(vec![DynSolType::Address]));
     }
 
     #[test]
     fn encode_function_single_param() {
         let contract = ContractAbi::load_human_readable(vec!["function hello(address name)"]);
-        let args = DynSolValue::Address(Address::repeat_byte(1));
-
-        let (enc, out) = contract.encode_function_input("hello", Some(args)).unwrap();
+        let args = Address::repeat_byte(1).to_string();
+        let (enc, _, out) = contract
+            .encode_function("hello", &format!("({:})", args))
+            .unwrap();
         assert!(enc.len() > 0);
-        assert!(out.len() == 0);
+        assert_eq!(out, DynSolType::Tuple(vec![]));
     }
 
     #[test]
@@ -186,15 +199,11 @@ mod tests {
                 == 2
         );
 
-        // address: 0x0101010101010101010101010101010101010101
-        let args = DynSolValue::Tuple(vec![
-            DynSolValue::Address(Address::repeat_byte(1)),
-            DynSolValue::Uint(U256::from(1u8), 256),
-        ]);
-
-        let (enc, out) = contract.encode_function_input("hello", Some(args)).unwrap();
+        let (enc, _, out) = contract
+            .encode_function("hello", "(0x0101010101010101010101010101010101010101, 1)")
+            .unwrap();
         assert!(enc.len() > 0);
-        assert!(out.len() == 1);
+        assert_eq!(out, DynSolType::Tuple(vec![DynSolType::Uint(256)]));
     }
 
     #[test]
@@ -216,5 +225,22 @@ mod tests {
         assert!(contract.abi.functions.len() == 2);
         assert!(contract.abi.functions.contains_key("addAndSet"));
         assert!(contract.abi.functions.contains_key("number"));
+    }
+
+    #[test]
+    fn parse_complex_input() {
+        let contract = ContractAbi::load_human_readable(vec![
+            "function exactInputSingle(tuple(address,address,uint24,address,uint256,uint256,uint256,uint160)) (uint256)"
+        ]);
+        assert!(contract.abi.functions.contains_key("exactInputSingle"));
+
+        let (enc, _, out) = contract
+            .encode_function(
+                "exactInputSingle",
+                "((0x0101010101010101010101010101010101010101,0x0101010101010101010101010101010101010101,3,0x0101010101010101010101010101010101010101,1,2,3,4))"
+            ).unwrap();
+
+        assert!(enc.len() > 0);
+        assert_eq!(out, DynSolType::Tuple(vec![DynSolType::Uint(256)]));
     }
 }

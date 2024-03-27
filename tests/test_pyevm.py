@@ -46,18 +46,16 @@ def test_contract_raw_interaction(evm, bob, kitchen_sink_json):
     abi = PyAbi.load_from_json(kitchen_sink_json)
     bytecode = abi.bytecode()
 
-    contract_address = evm.deploy(bob, bytecode, 0)
-    (enc, _) = abi.encode_function_input("increment", ())
+    contract_address = evm.deploy("()", bob, 0, abi)
+    (enc, _, _) = abi.encode_function("increment", "()")
 
     with pytest.raises(BaseException):
         evm.transact(bob, "Ox01", enc, 0)
 
-    evm.transact(bob, contract_address, enc, 0)
+    evm.transact("increment", "()", bob, contract_address, 0, abi)
 
-    (enc1, output_params) = abi.encode_function_input("value", ())
-    (result, _) = evm.call(contract_address, enc1)
-    decoded = decode(output_params, bytes(result))
-    assert decoded[0] == 1
+    (enc1, _, _) = abi.encode_function("value", "()")
+    assert [1] == evm.call("value", "()", contract_address, abi)
 
     r = evm.view_storage_slot(contract_address, 0)
     # NOTE: little endian bytes!
