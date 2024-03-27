@@ -46,6 +46,24 @@ class Function:
             return result[0]
         return result
 
+    def simulate(self, *args, caller: str = None):
+        """
+        Simulate a write call to the contract w/o changing state.
+        """
+        if not self.contract_address:
+            raise Exception("missing contract address. see at() method")
+
+        if not is_address(caller):
+            raise Exception("caller is missing or is not a valid address")
+
+        stargs = convert_for_soltypes(args)
+        result = self.evm.simulate(
+            self.name, stargs, caller, self.contract_address, self.abi
+        )
+        if len(result) == 1:
+            return result[0]
+        return result
+
     def transact(self, *args, caller: str = None, value: int = 0):
         """
         Make a write call to the contract changing the state of the Evm.

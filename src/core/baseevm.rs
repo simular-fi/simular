@@ -204,7 +204,7 @@ impl<DB: Database + DatabaseCommit + DatabaseRef> BaseEvm<DB> {
             .evm
             .db
             .storage_ref(addr, slot)
-            .map_err(|_| anyhow::anyhow!("error viewing storage slot"))?;
+            .map_err(|_| anyhow::anyhow!("Error viewing storage slot"))?;
 
         self.state = Some(evm.into_context_with_handler_cfg());
         Ok(r)
@@ -245,22 +245,8 @@ impl<DB: Database + DatabaseCommit + DatabaseRef> BaseEvm<DB> {
                     _ => Err(anyhow::anyhow!("Error on deploy: expected a create call")),
                 }
             }
-            _ => Err(anyhow::anyhow!("Error on deploy")),
+            _ => Err(anyhow::anyhow!("DEPLOY: EVM error")),
         }
-
-        /*
-        let (output, _, _) = evm
-            .transact_commit()
-            .map_err(|_| anyhow::anyhow!("error on deploy"))
-            .and_then(process_execution_result)?;
-
-        self.state = Some(evm.into_context_with_handler_cfg());
-
-        match output {
-            Output::Create(_, Some(address)) => Ok(address),
-            _ => anyhow::bail!("expected a create call"),
-        }
-        */
     }
 
     /// Transfer value between two accounts. If the 'to' address is a contract, the should contract
@@ -283,21 +269,8 @@ impl<DB: Database + DatabaseCommit + DatabaseRef> BaseEvm<DB> {
                 let (_b, gas, _logs) = process_result_with_value(result)?;
                 Ok(gas)
             }
-            _ => Err(anyhow::anyhow!("Error on transfer")),
+            _ => Err(anyhow::anyhow!("TRANSFER: EVM error")),
         }
-
-        /*
-        let result = match evm.transact_commit() {
-            Ok(result) => {
-                let (_b, gas, _logs) = process_result_with_value(result)?;
-                Ok(gas)
-            }
-            Err(_) => Err(anyhow::anyhow!("Error on transfer")),
-        };
-
-        self.state = Some(evm.into_context_with_handler_cfg());
-        result
-        */
     }
 
     /// Send a write transaction `to` the given contract
@@ -326,38 +299,38 @@ impl<DB: Database + DatabaseCommit + DatabaseRef> BaseEvm<DB> {
                 let (b, gas, _logs) = process_result_with_value(result)?;
                 Ok((b, gas))
             }
-            _ => Err(anyhow::anyhow!("Error on transact")),
+            _ => Err(anyhow::anyhow!("TRANSACT: EVM error")),
         }
-
-        // TODO: because of state, need to handle errors better. bail! is returning early!
-        /*
-        let result = match evm.transact_commit() {
-            Ok(result) => {
-                self.state = Some(evm.into_context_with_handler_cfg());
-
-                let (b, gas, _logs) = process_result_with_value(result)?;
-                Ok((b, gas))
-            }
-            _ => {
-                self.state = Some(evm.into_context_with_handler_cfg());
-
-                // Can use bail again!!
-                Err(anyhow::anyhow!("Error on write"))
-            }
-        };
-
-        result
-        */
     }
 
-    /// Send a read-only (view) call `to` the given contract
+    /// Make a read-only (view) call `to` the given contract
     pub fn call(&mut self, to: Address, data: Vec<u8>) -> Result<(Vec<u8>, u64)> {
         let tx = TxEnv {
             transact_to: TransactTo::Call(to),
             data: data.into(),
             ..Default::default()
         };
+        self.handle_call_or_simulate(tx)
+    }
 
+    /// Simulate a write call w/out changing state
+    pub fn simulate(
+        &mut self,
+        caller: Address,
+        to: Address,
+        data: Vec<u8>,
+    ) -> Result<(Vec<u8>, u64)> {
+        let tx = TxEnv {
+            caller,
+            transact_to: TransactTo::Call(to),
+            data: data.into(),
+            ..Default::default()
+        };
+        self.handle_call_or_simulate(tx)
+    }
+
+    // run call/simulate based on the Tx
+    fn handle_call_or_simulate(&mut self, tx: TxEnv) -> Result<(Vec<u8>, u64)> {
         let mut evm = self.get_evm();
         evm.context.evm.env.tx = tx;
 
@@ -368,21 +341,8 @@ impl<DB: Database + DatabaseCommit + DatabaseRef> BaseEvm<DB> {
                 let (r, gas, _) = process_result_with_value(result)?;
                 Ok((r, gas))
             }
-            _ => Err(anyhow::anyhow!("Error on call")),
+            _ => Err(anyhow::anyhow!("CALL/SIMULATE: EVM error")),
         }
-
-        /*
-        let result = match evm.transact() {
-            Ok(ResultAndState { result, .. }) => {
-                let (r, gas, _) = process_result_with_value(result)?;
-                Ok((r, gas))
-            }
-            _ => anyhow::bail!("error on read"),
-        };
-
-        self.state = Some(evm.into_context_with_handler_cfg());
-        result
-        */
     }
 }
 

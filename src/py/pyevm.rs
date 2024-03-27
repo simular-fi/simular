@@ -80,6 +80,24 @@ macro_rules! implement_common_functions {
                 Ok(dsm.into_py(py))
             }
 
+            pub fn simulate(
+                &mut self,
+                fn_name: &str,
+                args: &str,
+                caller: &str,
+                to: &str,
+                abi: &PyAbi,
+                py: Python<'_>,
+            ) -> anyhow::Result<PyObject> {
+                let a = str_to_address(to)?;
+                let b = str_to_address(caller)?;
+                let (calldata, _is_payable, decoder) = abi.encode_function(fn_name, args)?;
+                let (output, _) = self.0.simulate(b, a, calldata)?;
+                let dynvalues = decoder.0.abi_decode_params(&output)?;
+                let dsm = DynSolMap(dynvalues.clone());
+                Ok(dsm.into_py(py))
+            }
+
             pub fn transfer(
                 &mut self,
                 caller: &str,

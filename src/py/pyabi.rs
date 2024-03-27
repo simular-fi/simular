@@ -1,10 +1,6 @@
 ///! Wraps [`core::ContractAbi`]
 use alloy_dyn_abi::DynSolType;
-use alloy_primitives::{Address, I256, U256};
-use pyo3::{
-    prelude::*,
-    types::{PyAny, PyTuple},
-};
+use pyo3::prelude::*;
 
 use crate::core::abi::ContractAbi;
 
@@ -25,6 +21,11 @@ impl PyAbi {
     #[staticmethod]
     pub fn load_from_parts(abi: &str, bytes: Vec<u8>) -> Self {
         Self(ContractAbi::load_from_parts(abi, bytes))
+    }
+
+    #[staticmethod]
+    pub fn load_from_only_abi(raw: &str) -> Self {
+        Self(ContractAbi::load_from_only_abi(raw))
     }
 
     /// Load an ABI by providing shortened definitions of the functions

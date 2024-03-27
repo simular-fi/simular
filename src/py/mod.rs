@@ -3,10 +3,8 @@ pub(crate) mod pyabi;
 ///! It provides wrappers to the Evm and Abi parser.
 pub(crate) mod pyevm;
 
-use pyo3::exceptions::PyRuntimeError;
 use pyo3::prelude::PyErr;
 use revm::primitives::Address;
-use std::fmt::Debug;
 
 /// Used to map an Error to PyErr
 //pub fn pyerr<T: Debug>(err: T) -> PyErr {
