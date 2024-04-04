@@ -17,5 +17,5 @@ benchit:
 docs: 
 	mdbook build docs/
 
-make shell:
+shell:
 	hatch --env dev shell

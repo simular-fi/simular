@@ -2,19 +2,19 @@ mod pyabi;
 mod pyevm;
 
 use alloy_primitives::Address;
-use pyo3::{exceptions::PyRuntimeError, prelude::PyErr, prelude::*};
-use std::fmt::Debug;
+use anyhow::Result;
+use pyo3::prelude::*;
 
 /// Used to map an Error to PyErr
-pub fn pyerr<T: Debug>(err: T) -> PyErr {
-    PyRuntimeError::new_err(format!("{:?}", err))
-}
+//pub fn pyerr<T: Debug>(err: T) -> PyErr {
+//    PyRuntimeError::new_err(format!("{:?}", err))
+//}
 
 /// Convert strings to addresses.  String addresses are passed through from Python.
-pub fn str_to_address(caller: &str) -> Result<Address, PyErr> {
+pub fn str_to_address(caller: &str) -> Result<Address> {
     let c = caller
         .parse::<Address>()
-        .map_err(|_| pyerr("failed to parse caller address from string"))?;
+        .map_err(|_| anyhow::anyhow!("failed to parse caller address from string"))?;
     Ok(c)
 }
 

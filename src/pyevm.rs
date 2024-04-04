@@ -1,11 +1,11 @@
 use alloy_dyn_abi::DynSolValue;
 use alloy_primitives::U256;
-use anyhow::Result;
+use anyhow::{anyhow, Result};
 use core::ffi::c_uchar;
 use pyo3::{ffi, prelude::*};
 use simular_core::{BaseEvm, CreateFork, SnapShot};
 
-use crate::{pyabi::PyAbi, pyerr, str_to_address};
+use crate::{pyabi::PyAbi, str_to_address};
 
 #[pyclass]
 pub struct PyEvm(BaseEvm);
@@ -37,37 +37,37 @@ impl PyEvm {
     }
 
     /// Create a `SnapShot` of the current EVM state
-    pub fn create_snapshot(&self) -> PyResult<String> {
+    pub fn create_snapshot(&self) -> Result<String> {
         let snapshot = self.0.create_snapshot()?;
-        serde_json::to_string_pretty(&snapshot).map_err(|e| pyerr(e))
+        serde_json::to_string_pretty(&snapshot).map_err(|e| anyhow!("{:?}", e))
     }
 
     /// Create an account with an optional initial balance
-    pub fn create_account(&mut self, address: &str, balance: Option<u128>) -> PyResult<()> {
+    pub fn create_account(&mut self, address: &str, balance: Option<u128>) -> Result<()> {
         let caller = str_to_address(address)?;
-        let value = balance.and_then(|v| Some(U256::from(v)));
-        self.0.create_account(caller, value).map_err(|e| pyerr(e))
+        let value = balance.map(U256::from);
+        self.0.create_account(caller, value)
     }
 
     /// Get the balance of the given user
-    pub fn get_balance(&mut self, user: &str) -> PyResult<u128> {
+    pub fn get_balance(&mut self, user: &str) -> Result<u128> {
         let user = str_to_address(user)?;
-        let v = self.0.get_balance(user).map_err(|e| pyerr(e))?;
+        let v = self.0.get_balance(user)?;
         Ok(v.to::<u128>())
     }
 
     /// Transfer the amount of value from `caller` to the given recipient `to`.
-    pub fn transfer(&mut self, caller: &str, to: &str, amount: u128) -> PyResult<()> {
+    pub fn transfer(&mut self, caller: &str, to: &str, amount: u128) -> Result<()> {
         let a = str_to_address(caller)?;
         let b = str_to_address(to)?;
-        let value = U256::try_from(amount).map_err(|e| pyerr(e))?;
-        self.0.transfer(a, b, value).map_err(|e| pyerr(e))
+        let value = U256::try_from(amount)?;
+        self.0.transfer(a, b, value)
     }
 
     /// Deploy a contract
     pub fn deploy(&mut self, args: &str, caller: &str, value: u128, abi: &PyAbi) -> Result<String> {
         let a = str_to_address(caller)?;
-        let v = U256::try_from(value).map_err(|e| pyerr(e))?;
+        let v = U256::try_from(value)?;
         let (bits, _is_payable) = abi.encode_constructor(args)?;
         let addy = self.0.deploy(a, bits, v)?;
         Ok(addy.to_string())
@@ -87,7 +87,7 @@ impl PyEvm {
     ) -> Result<PyObject> {
         let a = str_to_address(caller)?;
         let b = str_to_address(to)?;
-        let v = U256::try_from(value).map_err(|e| pyerr(e))?;
+        let v = U256::try_from(value)?;
         let (calldata, _is_payable, decoder) = abi.encode_function(fn_name, args)?;
         let output = self.0.transact_commit(a, b, calldata, v)?;
         let dynvalues = decoder.0.abi_decode_params(&output.result)?;
@@ -127,7 +127,7 @@ impl PyEvm {
     ) -> Result<PyObject> {
         let caller_address = str_to_address(caller)?;
         let to_address = str_to_address(to)?;
-        let v = U256::try_from(value).map_err(|e| pyerr(e))?;
+        let v = U256::try_from(value)?;
 
         let (calldata, _is_payable, decoder) = abi.encode_function(fn_name, args)?;
         let output = self.0.simulate(caller_address, to_address, calldata, v)?;

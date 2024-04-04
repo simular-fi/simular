@@ -1,30 +1,36 @@
-///! Wraps [`core::ContractAbi`]
+//!
+//! Python wrapper for `simular-core::ContractAbi`
+//!
 use alloy_dyn_abi::DynSolType;
 use pyo3::prelude::*;
 
 use simular_core::ContractAbi;
 
-/// Provides the ability to load and parse ABI information.
+/// Can load and parse ABI information.  Used in `Contract.py` to
+/// process function calls.
 #[pyclass]
 pub struct PyAbi(ContractAbi);
 
 #[pymethods]
 impl PyAbi {
-    /// Load a complete ABI file from compiling a Solidity contract.  
-    /// This is a raw unparsed json file that includes both `abi` and `bytecode`.  
+    /// Load a complete ABI file from a compiled  Solidity contract.  
+    /// This is a raw un-parsed json file that includes both `abi` and `bytecode`.  
     #[staticmethod]
     pub fn from_full_json(abi: &str) -> Self {
         Self(ContractAbi::from_full_json(abi))
     }
 
-    /// Load an ABI from the unparsed json `abi` and `bytecode`
+    /// Load from the un-parsed json `abi` and optionally `bytecode`
     #[staticmethod]
     pub fn from_abi_bytecode(abi: &str, bytes: Option<Vec<u8>>) -> Self {
         Self(ContractAbi::from_abi_bytecode(abi, bytes))
     }
 
-    /// Load an ABI by providing shortened definitions of the functions
-    /// of interest.  For example:
+    /// Create an ABI by providing shortened definitions of the functions
+    /// of interest.  
+    ///
+    /// ## Example:
+    ///
     /// `["function hello() (uint256)"]` creates the function `hello` that
     /// can be encoded/decoded for calls to the Evm.
     #[staticmethod]
@@ -52,10 +58,17 @@ impl PyAbi {
         self.0.bytecode()
     }
 
+    /// Encode constructor arguments.
+    /// Returns the encoded args, and whether the constructor is payable
     pub fn encode_constructor(&self, args: &str) -> anyhow::Result<(Vec<u8>, bool)> {
         self.0.encode_constructor(args)
     }
 
+    /// Encode the arguments for a specific function.
+    /// Returns:
+    /// - `encoded args`
+    /// - `is the function payable?`
+    /// - `DynSolType` to decode output from function
     pub fn encode_function(
         &self,
         name: &str,
