@@ -5,11 +5,6 @@ use alloy_primitives::Address;
 use anyhow::Result;
 use pyo3::prelude::*;
 
-/// Used to map an Error to PyErr
-//pub fn pyerr<T: Debug>(err: T) -> PyErr {
-//    PyRuntimeError::new_err(format!("{:?}", err))
-//}
-
 /// Convert strings to addresses.  String addresses are passed through from Python.
 pub fn str_to_address(caller: &str) -> Result<Address> {
     let c = caller
