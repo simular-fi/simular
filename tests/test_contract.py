@@ -4,8 +4,9 @@ from simular import (
     contract_from_abi_bytecode,
     contract_from_raw_abi,
     create_account,
-    PyEvmLocal,
+    PyEvm,
     contract_from_inline_abi,
+    ether_to_wei,
 )
 
 
@@ -43,8 +44,7 @@ def test_contract_interface(evm, bob, alice, erc20abi, erc20bin):
         erc20.mint.transact(alice, 10, caller=alice)
 
     # Test state
-    evm2 = PyEvmLocal()
-    evm2.load_state(evm.dump_state())
+    evm2 = PyEvm.from_snapshot(evm.create_snapshot())
 
     erc20again = contract_from_inline_abi(evm2, ["function totalSupply() (uint256)"])
     erc20again.at(contract_address)
@@ -52,7 +52,7 @@ def test_contract_interface(evm, bob, alice, erc20abi, erc20bin):
 
 
 def test_deploy_and_test_kitchensink(evm, alice, kitchen_sink_json):
-    create_account(evm, alice, 2)
+    create_account(evm, alice, ether_to_wei(2))
     a = contract_from_raw_abi(evm, kitchen_sink_json)
 
     # fail on value with a non-payable constructor
@@ -68,7 +68,7 @@ def test_deploy_and_test_kitchensink(evm, alice, kitchen_sink_json):
     assert alice == a.setInput.transact((1, 2, alice), caller=alice)
 
     # receive
-    one_ether = int(1e18)
+    one_ether = ether_to_wei(1)
     assert 0 == evm.get_balance(a.address)
     evm.transfer(alice, a.address, one_ether)
     assert one_ether == evm.get_balance(alice)

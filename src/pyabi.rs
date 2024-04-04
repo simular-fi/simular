@@ -2,7 +2,7 @@
 use alloy_dyn_abi::DynSolType;
 use pyo3::prelude::*;
 
-use crate::core::abi::ContractAbi;
+use simular_core::ContractAbi;
 
 /// Provides the ability to load and parse ABI information.
 #[pyclass]
@@ -13,19 +13,14 @@ impl PyAbi {
     /// Load a complete ABI file from compiling a Solidity contract.  
     /// This is a raw unparsed json file that includes both `abi` and `bytecode`.  
     #[staticmethod]
-    pub fn load_from_json(abi: &str) -> Self {
-        Self(ContractAbi::load_from_full_json(abi))
+    pub fn from_full_json(abi: &str) -> Self {
+        Self(ContractAbi::from_full_json(abi))
     }
 
     /// Load an ABI from the unparsed json `abi` and `bytecode`
     #[staticmethod]
-    pub fn load_from_parts(abi: &str, bytes: Vec<u8>) -> Self {
-        Self(ContractAbi::load_from_parts(abi, bytes))
-    }
-
-    #[staticmethod]
-    pub fn load_from_only_abi(raw: &str) -> Self {
-        Self(ContractAbi::load_from_only_abi(raw))
+    pub fn from_abi_bytecode(abi: &str, bytes: Option<Vec<u8>>) -> Self {
+        Self(ContractAbi::from_abi_bytecode(abi, bytes))
     }
 
     /// Load an ABI by providing shortened definitions of the functions
@@ -33,8 +28,8 @@ impl PyAbi {
     /// `["function hello() (uint256)"]` creates the function `hello` that
     /// can be encoded/decoded for calls to the Evm.
     #[staticmethod]
-    pub fn load_from_human_readable(values: Vec<&str>) -> Self {
-        Self(ContractAbi::load_human_readable(values))
+    pub fn from_human_readable(values: Vec<&str>) -> Self {
+        Self(ContractAbi::from_human_readable(values))
     }
 
     /// Does the ABI contain the function `name`

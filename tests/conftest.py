@@ -1,8 +1,7 @@
 import pytest
 from pathlib import Path
-import json
 
-from simular import PyEvmLocal
+from simular import PyEvm
 
 PATH = Path(__file__).parent
 
@@ -19,7 +18,7 @@ def alice():
 
 @pytest.fixture
 def evm():
-    return PyEvmLocal()
+    return PyEvm()
 
 
 @pytest.fixture
@@ -42,10 +41,3 @@ def kitchen_sink_json():
     with open(f"{PATH}/./fixtures/KitchenSink.json") as f:
         rawabi = f.read()
     return rawabi
-
-
-@pytest.fixture
-def usdc_cache():
-    with open(f"{PATH}/./fixtures/usdc_cache.json") as f:
-        cache = f.read()
-    return cache

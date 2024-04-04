@@ -2,7 +2,7 @@ from simular import PyAbi
 
 
 def test_load_from_parts(erc20abi, erc20bin):
-    abi = PyAbi.load_from_parts(erc20abi, erc20bin)
+    abi = PyAbi.from_abi_bytecode(erc20abi, erc20bin)
     assert abi.has_function("mint")
     assert abi.has_function("burn")
     assert not abi.has_fallback()
@@ -21,13 +21,13 @@ def test_load_from_parts(erc20abi, erc20bin):
 
 def test_load_from_human_readable():
     funcs = ["function mint(address, uint256)", "function name()(string)"]
-    abi = PyAbi.load_from_human_readable(funcs)
+    abi = PyAbi.from_human_readable(funcs)
     assert abi.has_function("mint")
     assert abi.has_function("name")
 
 
 def test_load_full_json_abi(kitchen_sink_json):
-    abi = PyAbi.load_from_json(kitchen_sink_json)
+    abi = PyAbi.from_full_json(kitchen_sink_json)
     assert abi.has_function("increment")
     assert abi.has_function("setInput")
     assert abi.has_receive()

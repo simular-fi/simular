@@ -1,7 +1,8 @@
 build:
 	hatch run dev:maturin develop
 
-release:
+# this build the production release
+dev_release:
 	hatch run dev:maturin develop --release
 
 test: build

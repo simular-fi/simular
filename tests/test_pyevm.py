@@ -2,7 +2,7 @@ import pytest
 from eth_utils import to_wei
 from eth_abi import decode
 
-from simular import PyEvmLocal, PyAbi
+from simular import PyEvm, PyAbi
 
 
 def test_create_account_and_balance(evm, bob):
@@ -33,17 +33,15 @@ def test_transfer_and_dump_state(evm, bob, alice):
     assert evm.get_balance(alice) == one_ether
 
     # dump and reload state...
-    state = evm.dump_state()
-
-    evm2 = PyEvmLocal()
-    evm2.load_state(state)
+    state = evm.create_snapshot()
+    evm2 = PyEvm.from_snapshot(state)
 
     assert evm2.get_balance(bob) == one_ether
     assert evm2.get_balance(alice) == one_ether
 
 
 def test_contract_raw_interaction(evm, bob, kitchen_sink_json):
-    abi = PyAbi.load_from_json(kitchen_sink_json)
+    abi = PyAbi.from_full_json(kitchen_sink_json)
     bytecode = abi.bytecode()
 
     contract_address = evm.deploy("()", bob, 0, abi)
@@ -56,8 +54,3 @@ def test_contract_raw_interaction(evm, bob, kitchen_sink_json):
 
     (enc1, _, _) = abi.encode_function("value", "()")
     assert [1] == evm.call("value", "()", contract_address, abi)
-
-    r = evm.view_storage_slot(contract_address, 0)
-    # NOTE: little endian bytes!
-    slot_value = int.from_bytes(r, "little")
-    assert slot_value == 1

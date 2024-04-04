@@ -1,18 +1,18 @@
 import time
 from pathlib import Path
 
-from simular import PyEvmLocal, Contract, create_account, contract_from_raw_abi
+from simular import PyEvm, create_account, contract_from_raw_abi, ether_to_wei
 
 PATH = Path(__file__).parent
-NUM_TX = 200_000
+NUM_TX = 150_000
 
 
 def how_fast():
     with open(f"{PATH}/../tests/fixtures/KitchenSink.json") as f:
         abi = f.read()
 
-    client = PyEvmLocal()
-    deployer = create_account(client, value=2)
+    client = PyEvm()
+    deployer = create_account(client, value=ether_to_wei(2))
 
     counter = contract_from_raw_abi(client, abi)
     counter.deploy(caller=deployer)
@@ -27,7 +27,7 @@ def how_fast():
 
     val = counter.value.call()
     assert NUM_TX == val
-    print(f"time: {total_time:.6f} second(s) for {NUM_TX} transactions")
+    print(f"{NUM_TX} transactions in : {total_time:.6f} second(s)")
 
 
 if __name__ == "__main__":

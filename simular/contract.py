@@ -5,7 +5,7 @@ Wraps pyo3 code to provide a high-level contract API
 from eth_utils import is_address
 import typing
 
-from .simular import PyEvmLocal, PyEvmFork, PyAbi
+from .simular import PyEvm, PyAbi
 
 
 def convert_for_soltypes(args: typing.Tuple):
@@ -20,9 +20,7 @@ class Function:
     Contains information needed to interact with a contract function
     """
 
-    def __init__(
-        self, evm: PyEvmLocal | PyEvmFork, abi: PyAbi, contract_address: str, name: str
-    ):
+    def __init__(self, evm: PyEvm, abi: PyAbi, contract_address: str, name: str):
         self.name = name
         self.evm = evm
         self.abi = abi
@@ -46,7 +44,7 @@ class Function:
             return result[0]
         return result
 
-    def simulate(self, *args, caller: str = None):
+    def simulate(self, *args, caller: str = None, value: int = 0):
         """
         Simulate a write call to the contract w/o changing state.
         """
@@ -58,7 +56,7 @@ class Function:
 
         stargs = convert_for_soltypes(args)
         result = self.evm.simulate(
-            self.name, stargs, caller, self.contract_address, self.abi
+            self.name, stargs, caller, self.contract_address, value, self.abi
         )
         if len(result) == 1:
             return result[0]
@@ -88,7 +86,7 @@ class Function:
 
 
 class Contract:
-    def __init__(self, evm: PyEvmLocal | PyEvmFork, abi: PyAbi):
+    def __init__(self, evm: PyEvm, abi: PyAbi):
         """
         Instantiate a contract from an ABI.
 
