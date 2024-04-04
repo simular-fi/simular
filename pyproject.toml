@@ -32,7 +32,12 @@ classifiers = [
 dependencies = ["eth-abi>=4.1.0", "eth-utils>=2.2.0"]
 
 [tool.hatch.envs.dev]
-dependencies = ["pytest>=7.4.0", "black>=23.7.0", "maturin>=1.1.0"]
+dependencies = [
+    "pytest>=7.4.0",
+    "black>=23.7.0",
+    "maturin>=1.1.0",
+    "sphinx>=7.2.6",
+]
 
 [project.urls]
 Source = "https://github.com/simular-fi/simular"

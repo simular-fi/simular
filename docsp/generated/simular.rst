@@ -1,0 +1,23 @@
+﻿simular
+=======
+
+.. automodule:: simular
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+
+
