@@ -3,62 +3,51 @@
 Utilities defines several 'helper' functions to create contracts and accounts.
 
 - [Utility Functions](#utility-functions)
-  - [Functions](#functions)
-    - [generate\_random address](#generate_random-address)
-    - [create\_account](#create_account)
-    - [create\_many\_accounts](#create_many_accounts)
+    - [generate\_random\_address()](#generate_random_address)
+    - [create\_account(evm, address, value)](#create_accountevm-address-value)
+    - [create\_many\_accounts(evm: PyEvm, value=0)](#create_many_accountsevm-pyevm-value0)
     - [contract\_from\_raw\_abi](#contract_from_raw_abi)
     - [contract\_from\_abi\_bytecode](#contract_from_abi_bytecode)
     - [contract\_from\_inline\_abi](#contract_from_inline_abi)
 
-## Functions
 
-### generate_random address
-Create a random Ethereum address
+### generate_random_address()
 
-```python
-def generate_random_address() -> str
-```
-**Returns:** an address 
+Generate a random, hex-encoded, Ethereum address
+
+**Returns:** the address as a hex-encode str
 
 Example:
 ```python
-address = generate_random_address()
+>>> generate_random_address()
+'0x57eedc724deb2ce6bc67ea3d90a842efa26b9042'
 ```
 
-### create_account
-Create an account in the EVM
+### create_account(evm, address, value)
 
-```python
-def create_account(
-                  evm: PyEvmLocal | PyEvmFork,
-                  address: str = None
-                  value: int = 0) -> str
-```
+Create a new account in the EVM.
+
 **Parameters**:
 
-- `evm`: PyEvmLocal | PyEvmForm.  the EVM client
-- `address`: str  optional. if set it will be used for the account address.
-                          Otherwise a random address will be generated.
-- `value`  : int  optional. create an initial balance for the account in ether
+- `evm`    : (PyEvm) - the EVM client
+- `address`: (str)  - `optional` if set it will be used for the account address.
+Otherwise a random address will be generated.
+- `value`  : (int)  - `optional` create an initial balance for the account in `wei`
 
-**Returns:** the address
+**Returns:** the address as a hex-encode str
 
 Example:
 ```python
-evm = PyEvmLocal()
-bob = create_address(evm)
+>>> evm = PyEvm()
+>>> bob = create_address(evm)
+'0x57eedc724deb2ce6bc67ea3d90a842efa26b9042'
 ```
 
-### create_many_accounts
+### create_many_accounts(evm: PyEvm, value=0)
 Create many accounts in the EVM. Address are randomly generated
 
 ```python
-def create_many_account(
-                  evm: PyEvmLocal | PyEvmFork,
-                  num: int
-                  value: int
-                  value: int = 0) -> typing.List[str]
+def create_many_account(evm: PyEvm, num: int value: int = 0)
 ```
 **Parameters**
 

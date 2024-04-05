@@ -42,7 +42,15 @@ impl PyEvm {
         serde_json::to_string_pretty(&snapshot).map_err(|e| anyhow!("{:?}", e))
     }
 
-    /// Create an account with an optional initial balance
+    /// Create account with an initial balance
+    ///
+    /// Parameters
+    /// ----------
+    /// address: str
+    ///     Address of account to create
+    /// balance: int
+    ///     Option balance
+    ///
     pub fn create_account(&mut self, address: &str, balance: Option<u128>) -> Result<()> {
         let caller = str_to_address(address)?;
         let value = balance.map(U256::from);

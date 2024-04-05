@@ -114,9 +114,19 @@ class Contract:
 
     def at(self, address: str) -> "Contract":
         """
-        Set the contract address. Note: this is automatically set when using deploy
-        - `address`: the address of a deployed contract
-        Return self
+        Set the contract address.
+
+        .. note::
+            this is automatically set when using deploy``
+
+        Parameters
+        ----------
+        address: str
+            the address of a deployed contract
+
+        Returns
+        -------
+            self
         """
         self.address = address
         return self

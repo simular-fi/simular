@@ -43,7 +43,7 @@ Under the covers, a Contract knows how to properly encode all interactions with 
 ## Constructor
 Create an instance of a Contract from an ABI.
 
-**See [Utilities](./utils.md) for a simpler way to create a Contract**
+> See [utilities](./utils.md) for the preferred way to create a Contract
 
 ```python
 def __init__(self, evm: PyEvmLocal | PyEvmFork, abi: PyAbi)
@@ -56,6 +56,7 @@ def __init__(self, evm: PyEvmLocal | PyEvmFork, abi: PyAbi)
 **Returns** self (Contract)
 
 Example:
+
 ```python
 evm = PyEvmLocal()
 abi = PyAbi.load_from_json(...)

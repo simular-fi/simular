@@ -10,12 +10,12 @@ from . import PyEvm, PyAbi, Contract
 
 
 def ether_to_wei(value: int) -> int:
+    """Convert ether to wei"""
     return to_wei(value, "ether")
 
 
 def generate_random_address() -> str:
-    """
-    Generate a random hex encoded account/wallet address
+    """Generate a random hex encoded account/wallet address
 
     Returns: the address
     """
