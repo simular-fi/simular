@@ -43,14 +43,6 @@ impl PyEvm {
     }
 
     /// Create account with an initial balance
-    ///
-    /// Parameters
-    /// ----------
-    /// address: str
-    ///     Address of account to create
-    /// balance: int
-    ///     Option balance
-    ///
     pub fn create_account(&mut self, address: &str, balance: Option<u128>) -> Result<()> {
         let caller = str_to_address(address)?;
         let value = balance.map(U256::from);

@@ -24,8 +24,9 @@ def generate_random_address() -> str:
 
 def create_account(evm: PyEvm, address: str = None, value: int = 0) -> str:
     """
-    Create an account in the EVM.
-    - evm    : PyEvmLocal | PyEvmForm.  the EVM client
+    Create an account
+
+    - evm    : PyEvm.  the EVM client
     - address: str  optional. if set it will be used for the account address.
                               Otherwise a random address will be generated.
     - value  : int  optional. create an initial balance for the account in wei
@@ -35,7 +36,6 @@ def create_account(evm: PyEvm, address: str = None, value: int = 0) -> str:
     if not isinstance(evm, PyEvm):
         raise Exception("'evm' should be an instance of either PyEvmLocal or PyEvmFork")
 
-    # wei = to_wei(value, "ether")
     if not address:
         address = generate_random_address()
         evm.create_account(address, value)
@@ -51,7 +51,7 @@ def create_account(evm: PyEvm, address: str = None, value: int = 0) -> str:
 def create_many_accounts(evm: PyEvm, num: int, value: int = 0) -> typing.List[str]:
     """
     Create many accounts in the EVM
-    - evm    : PyEvmLocal | PyEvmForm.  the EVM client
+    - evm    : PyEvm.  the EVM client
     - num    : int  the number of accounts to create
     - value  : int  optional. create an initial balance for each account in wei
 
@@ -65,7 +65,7 @@ def contract_from_raw_abi(evm: PyEvm, raw_abi: str) -> Contract:
     Create the contract given the full ABI. Full ABI should include
     `abi` and `bytecode`. This is usually a single json file from a compiled Solidity contract.
 
-    - `evm`     : PyEvmLocal | PyEvmForm.  the EVM client
+    - `evm`     : PyEvm.  the EVM client
     - `raw_abi` : abi file as un-parsed json
     Returns an instance of Contract
     """

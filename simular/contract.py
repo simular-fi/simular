@@ -33,6 +33,7 @@ class Function:
         changes to the Evm.
 
         - `args`: 0 or more expected arguments to the function
+
         Returns: the decoded result
         """
         if not self.contract_address:
@@ -139,18 +140,6 @@ class Contract:
         - `value`: optional amount of Ether for the contract
         Returns the address of the deployed contract
         """
-        # constructor_params = self.abi.constructor_input_types()
-
-        # bytecode = self.abi.bytecode()
-
-        # if not constructor_params and len(args) > 0:
-        #    raise Exception("constructor doesn't take any args")
-
-        # if constructor_params:
-        #    if len(constructor_params) != len(args):
-        #        raise Exception("wrong number of args for the constructor")
-        #    bytecode += encode(constructor_params, args)
-
         if not caller:
             raise Exception("Missing required 'caller' address")
 
