@@ -40,6 +40,9 @@ dependencies = [
     "sphinx_rtd_theme>=2.0.0",
 ]
 
+[tool.hatch.envs.dev.scripts]
+docs = "sphinx-build -M html docs docs/build"
+
 [project.urls]
 Source = "https://github.com/simular-fi/simular"
 Documentation = "https://simular-fi.github.io/simular"

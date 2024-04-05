@@ -1,3 +1,4 @@
+
 build:
 	hatch run dev:maturin develop
 
@@ -15,7 +16,7 @@ benchit:
 	hatch run dev:python bench/simple.py
 
 docs: 
-	mdbook build docs/
+	hatch run:dev docs
 
 shell:
 	hatch --env dev shell

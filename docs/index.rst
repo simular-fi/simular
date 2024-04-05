@@ -1,7 +1,3 @@
-.. simular documentation master file, created by
-   sphinx-quickstart on Thu Apr  4 09:27:23 2024.
-   You can adapt this file completely to your liking, but it should at least
-   contain the root `toctree` directive.
 .. _index:
 
 simular
@@ -25,10 +21,10 @@ like `Mesa <https://mesa.readthedocs.io/en/main/>`_.
 Features
 --------
 
-- **EVM**: run a local version with an in-memory database, or fork db state from a remote node.
-- **ABI**: parse compiled Solidity json files or define a specific set of functions using `human-readable` notation
-- **Snapshot**: dump the current state of the EVM to json for future use in pre-populating EVM storage
-- **Contract/Utilities**: high-level, user-friendy Python API
+- Run a local version with an in-memory database. Or fork db state from a remote node.
+- Parse compiled Solidity json files or define a specific set of functions using `human-readable` notation
+- Dump the current state of the EVM to json for future use in pre-populating EVM storage
+- User-friendy Python API
 
 
 Standing on the shoulders of giants...
@@ -42,12 +38,8 @@ Thanks to the following projects for making this work possible!
 - `eth_utils/eth_abi <https://eth-utils.readthedocs.io/en/stable/>`_ 
 
 
-.. toctree::
-   :maxdepth: 2
-   :caption: Contents:
-   
-   getstarted
-   api
+.. include:: toc.rst
+
 
 
 

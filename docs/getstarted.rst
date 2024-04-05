@@ -11,15 +11,12 @@ It requires Python ``>=3.11``.
     >>> pip install simular-evm
 
 
-Examples
---------
-
-Here are a few quick examples that demonstrate the API. You can find more 
-details on the API in the **Reference Guide** section.
+Here are a few examples of how to use simular. You can find more details 
+in the API section.
 
 
-Transfer Ether between accounts
--------------------------------
+Transfer Ether
+--------------
 
 In this example, we'll create 2 Ethereum accounts and show how to 
 transfer Ether between the accounts.

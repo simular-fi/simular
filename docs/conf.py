@@ -8,7 +8,7 @@
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#project-information
 
 project = "simular"
-copyright = "2024, MITRE"
+copyright = "2024, The MITRE Corporation"
 author = "Dave Bryson"
 
 # -- General configuration ---------------------------------------------------
