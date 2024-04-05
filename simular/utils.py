@@ -83,7 +83,7 @@ def contract_from_abi_bytecode(
     evm: PyEvm, raw_abi: str, bytecode: bytes = None
 ) -> Contract:
     """
-    Create a contract given the abi and bytecode.
+    Create a contract given the abi and/or bytecode.
 
     - `evm`     : PyEvm  the EVM client
     - `raw_abi` : abi file as un-parsed json
