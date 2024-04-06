@@ -34,9 +34,9 @@ Functions
     :param balance: (optional) balance in ``wei`` to set for the account.
     :return: the hex-encoded address 
 
-    .. note::
-        If no address or value are provided a random address will be created and returned, and 
-        the account balance will be set to 0
+.. note::
+    * If no address is provided, a random address will be created
+    * If no value is provided, the account balance will be set to 0
 
 
 .. py:function:: create_many_accounts(evm: PyEvm, num: int, value: int = 0)
@@ -58,8 +58,8 @@ Functions
     :param raw_abi: the full abi contents
     :return: an instance of ``Contract`` based on the ABI and contract creation bytecode
 
-    .. note::
-        You still need to `Contract.deploy()` to make the contract available in the EVM 
+.. note::
+    Don't forget to ``deploy`` the contract to make it available in the EVM
 
 
 .. py:function:: contract_from_abi_bytecode(evm: PyEvm, raw_abi: str, bytecode: bytes = None)
@@ -75,8 +75,8 @@ Functions
 
      :return: an instance of ``Contract``
 
-     .. note::
-        You still need to `Contract.deploy()` to make the contract available in the EVM 
+.. note::
+    Don't forget to ``deploy`` the contract to make it available in the EVM
 
 
 .. py:function:: contract_from_inline_abi(evm: PyEvm, abi: typing.List[str])
@@ -91,19 +91,22 @@ Functions
      :return: an instance of ``Contract``
 
 .. warning::
-    The contract must already be deployed and you will need to use `Contract.at()` to 
+    The contract must already be deployed. You will need to use ``Contract.at()`` to 
     set the address of the contract.
 
 Example:
 
 .. code-block:: python
 
-    # descibes a single contract function 'hello' that takes no arguments and returns 
-    # an number
-    >> abi = ["function hello()(uint256)"]
+    >>> evm = PyEvm()
 
-    >> evm = PyEvm()
+    # specifies a single contract function 'hello' 
+    # that takes no arguments and returns a number
+    >>> abi = ["function hello()(uint256)"]
 
-    >> contract = contract_from_inline_abi(abi)
-    >> contract.at('deployed contracts address')
+    >>> contract = contract_from_inline_abi(abi)
+    >>> contract.at('deployed contracts address')
+
+    # call it 
+    >>> value = contract.hello.call()
 

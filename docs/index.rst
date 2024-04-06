@@ -21,9 +21,9 @@ like `Mesa <https://mesa.readthedocs.io/en/main/>`_.
 Features
 --------
 
-- Run a local version with an in-memory database. Or fork db state from a remote node.
-- Parse compiled Solidity json files or define a specific set of functions using `human-readable` notation
-- Dump the current state of the EVM to json for future use in pre-populating EVM storage
+- Run a local version with an in-memory database. Or copy (fork) state from a remote node.
+- Parse Solidity ABI json files or define a specific set of functions using `human-readable` notation.
+- Dump the current state of the EVM to json for future use in pre-populating EVM storage.
 - User-friendy Python API
 
 
