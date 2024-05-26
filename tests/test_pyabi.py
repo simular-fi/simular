@@ -1,4 +1,7 @@
+import pytest
+
 from simular import PyAbi
+from simular.contract import convert_for_soltypes
 
 
 def test_load_from_parts(erc20abi, erc20bin):
@@ -39,3 +42,13 @@ def test_load_full_json_abi(kitchen_sink_json):
     )
     hexed3 = bytes.hex(bytes(sig3))
     assert with_struct == hexed3
+
+
+def test_convert_to_soltypes():
+    with pytest.raises(BaseException):
+        convert_for_soltypes(1)
+
+    assert "(1)" == convert_for_soltypes((1,))
+    assert "(1, (2, (3, false)))" == convert_for_soltypes((1, (2, (3, False))))
+    assert "(1, dave, true, 0x0)" == convert_for_soltypes((1, "dave", True, "0x0"))
+    assert "((1, 2), (false, bob))" == convert_for_soltypes(((1, 2), (False, "bob")))

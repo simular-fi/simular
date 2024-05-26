@@ -7,6 +7,9 @@ use simular_core::{BaseEvm, CreateFork, SnapShot};
 
 use crate::{pyabi::PyAbi, str_to_address};
 
+/// default block interval for advancing block time (12s)
+const DEFAULT_BLOCK_INTERVAL: u64 = 12;
+
 #[pyclass]
 pub struct PyEvm(BaseEvm);
 
@@ -134,6 +137,16 @@ impl PyEvm {
         let dynvalues = decoder.0.abi_decode_params(&output.result)?;
         let dsm = DynSolMap(dynvalues.clone());
         Ok(dsm.into_py(py))
+    }
+
+    /// Advance block.number and block.timestamp. Set interval to the amount of
+    /// time in seconds you want to advance the timestamp (default: 12s). Block
+    /// number will automatically increment.
+    ///
+    /// When using a fork the initial block.number/timestamp will come from the snapshot.
+    pub fn advance_block(&mut self, interval: Option<u64>) {
+        let it = interval.unwrap_or(DEFAULT_BLOCK_INTERVAL);
+        self.0.update_block(it);
     }
 }
 

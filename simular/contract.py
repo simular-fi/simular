@@ -9,10 +9,15 @@ from .simular import PyEvm, PyAbi
 
 
 def convert_for_soltypes(args: typing.Tuple):
+    if not isinstance(args, tuple):
+        raise Exception("Expected tuple as arguments")
+
+    def clean(v):
+        return str(v).replace("'", "").replace("True", "true").replace("False", "false")
+
     if len(args) == 1:
-        i = str(args[0]).replace("'", "")
-        return f"({i})"
-    return str(args).replace("'", "")
+        return f"({clean(args[0])})"
+    return clean(args)
 
 
 class Function:
