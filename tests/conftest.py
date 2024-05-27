@@ -41,3 +41,10 @@ def kitchen_sink_json():
     with open(f"{PATH}/./fixtures/KitchenSink.json") as f:
         rawabi = f.read()
     return rawabi
+
+
+@pytest.fixture
+def block_meta_json():
+    with open(f"{PATH}/./fixtures/BlockMeta.json") as f:
+        rawabi = f.read()
+    return rawabi

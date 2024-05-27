@@ -9,6 +9,9 @@ from .simular import PyEvm, PyAbi
 
 
 def convert_for_soltypes(args: typing.Tuple):
+    """
+    This converts `args` into a string for processing on the Rust side
+    """
     if not isinstance(args, tuple):
         raise Exception("Expected tuple as arguments")
 
@@ -22,7 +25,8 @@ def convert_for_soltypes(args: typing.Tuple):
 
 class Function:
     """
-    Contains information needed to interact with a contract function
+    Contains information needed to interact with a contract function. This
+    is attached automatically to the Contract based on the ABI.
     """
 
     def __init__(self, evm: PyEvm, abi: PyAbi, contract_address: str, name: str):
@@ -94,7 +98,7 @@ class Function:
 class Contract:
     def __init__(self, evm: PyEvm, abi: PyAbi):
         """
-        Instantiate a contract from an ABI.
+        Instantiate a contract from an ABI with an EVM.
 
         Maps contract functions to this class.  Making function available
         as attributes on the Contract.
@@ -107,7 +111,7 @@ class Contract:
 
     def __getattr__(self, name: str) -> Function:
         """
-        Make solidity contract methods available as method calls. For a given function name,
+        Make solidity contract methods available as method calls. For a given function `name`,
         return `Function`.
 
         For example, if the ABI has the contract function 'function hello(uint256)',
@@ -140,8 +144,8 @@ class Contract:
     def deploy(self, *args, caller: str = None, value: int = 0) -> str:
         """
         Deploy the contract, returning it's deployed address
-        - `caller`: the address of the requester...`msg.sender`
         - `args`: a list of args (if any)
+        - `caller`: the address of the requester...`msg.sender`
         - `value`: optional amount of Ether for the contract
         Returns the address of the deployed contract
         """

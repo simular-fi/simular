@@ -1,3 +1,4 @@
+.PHONY: docs
 
 build:
 	hatch run dev:maturin develop
@@ -16,7 +17,7 @@ benchit:
 	hatch run dev:python bench/simple.py
 
 docs: 
-	hatch run:dev docs
+	hatch run dev:docs
 
 shell:
 	hatch --env dev shell

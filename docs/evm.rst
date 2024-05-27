@@ -134,8 +134,21 @@ Example:
     >>> evm.get_balance(alice)
     1000000000000000000
 
-.. note:: 
-    PyEvm as additional methods, but they are easier to use through :ref:`contract` 
 
+.. py:method:: advance_block(interval = None)
+
+    This method provides the ability to simulate the mining of blocks. It will advance 
+    `block.number` and `block.timestamp`.  
+    
+    It's not necessary to call this method. However, some contracts may have logic 
+    that need this information.
+
+    :param interval: (int) optional. set the time in seconds between blocks. Default is 12 seconds
+
+Example:
+
+.. code-block:: python
+
+    >>> evm.advance_block()
 
 

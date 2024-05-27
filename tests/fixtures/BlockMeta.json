@@ -1,0 +1,109 @@
+{
+    "abi": [
+        {
+            "type": "function",
+            "name": "getMeta",
+            "inputs": [],
+            "outputs": [
+                {
+                    "name": "",
+                    "type": "uint256",
+                    "internalType": "uint256"
+                },
+                {
+                    "name": "",
+                    "type": "uint256",
+                    "internalType": "uint256"
+                }
+            ],
+            "stateMutability": "view"
+        }
+    ],
+    "bytecode": {
+        "object": "0x6080604052348015600f57600080fd5b50607c80601d6000396000f3fe6080604052348015600f57600080fd5b506004361060285760003560e01c8063a79af2ce14602d575b600080fd5b6040805142815243602082015281519081900390910190f3fea26469706673582212202c76d8081bf4b8745cf50463d5b4f48aadbd688456ec111406e9010a51d456ba64736f6c63430008150033",
+        "sourceMap": "65:175:22:-:0;;;;;;;;;;;;;;;;;;;",
+        "linkReferences": {}
+    },
+    "deployedBytecode": {
+        "object": "0x6080604052348015600f57600080fd5b506004361060285760003560e01c8063a79af2ce14602d575b600080fd5b6040805142815243602082015281519081900390910190f3fea26469706673582212202c76d8081bf4b8745cf50463d5b4f48aadbd688456ec111406e9010a51d456ba64736f6c63430008150033",
+        "sourceMap": "65:175:22:-:0;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;129:109;;;;201:15;188:25:35;;218:12:22;244:2:35;229:18;;222:34;129:109:22;;;;;;;;;;",
+        "linkReferences": {}
+    },
+    "methodIdentifiers": {
+        "getMeta()": "a79af2ce"
+    },
+    "rawMetadata": "{\"compiler\":{\"version\":\"0.8.21+commit.d9974bed\"},\"language\":\"Solidity\",\"output\":{\"abi\":[{\"inputs\":[],\"name\":\"getMeta\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"}],\"devdoc\":{\"kind\":\"dev\",\"methods\":{},\"version\":1},\"userdoc\":{\"kind\":\"user\",\"methods\":{\"getMeta()\":{\"notice\":\"Used for testing the simulator\"}},\"version\":1}},\"settings\":{\"compilationTarget\":{\"src/BlockMeta.sol\":\"BlockMeta\"},\"evmVersion\":\"paris\",\"libraries\":{},\"metadata\":{\"bytecodeHash\":\"ipfs\"},\"optimizer\":{\"enabled\":true,\"runs\":200},\"remappings\":[\":ds-test/=lib/forge-std/lib/ds-test/src/\",\":forge-std/=lib/forge-std/src/\",\":solmate/=lib/solmate/src/\"]},\"sources\":{\"src/BlockMeta.sol\":{\"keccak256\":\"0xbdc5d72b6d5eab867385d279eea3a36dc70fc21dd91750790e83f0e8724dc718\",\"license\":\"UNLICENSED\",\"urls\":[\"bzz-raw://c7122fdef2316f20f01744bc285901301dcbbbb3a3441c911ab4fbc4301356a2\",\"dweb:/ipfs/QmR9WJihJPtrXqmn1ifD8mVQxAvyBGr7MBSf4ojKY52adf\"]}},\"version\":1}",
+    "metadata": {
+        "compiler": {
+            "version": "0.8.21+commit.d9974bed"
+        },
+        "language": "Solidity",
+        "output": {
+            "abi": [
+                {
+                    "inputs": [],
+                    "stateMutability": "view",
+                    "type": "function",
+                    "name": "getMeta",
+                    "outputs": [
+                        {
+                            "internalType": "uint256",
+                            "name": "",
+                            "type": "uint256"
+                        },
+                        {
+                            "internalType": "uint256",
+                            "name": "",
+                            "type": "uint256"
+                        }
+                    ]
+                }
+            ],
+            "devdoc": {
+                "kind": "dev",
+                "methods": {},
+                "version": 1
+            },
+            "userdoc": {
+                "kind": "user",
+                "methods": {
+                    "getMeta()": {
+                        "notice": "Used for testing the simulator"
+                    }
+                },
+                "version": 1
+            }
+        },
+        "settings": {
+            "remappings": [
+                "ds-test/=lib/forge-std/lib/ds-test/src/",
+                "forge-std/=lib/forge-std/src/",
+                "solmate/=lib/solmate/src/"
+            ],
+            "optimizer": {
+                "enabled": true,
+                "runs": 200
+            },
+            "metadata": {
+                "bytecodeHash": "ipfs"
+            },
+            "compilationTarget": {
+                "src/BlockMeta.sol": "BlockMeta"
+            },
+            "evmVersion": "paris",
+            "libraries": {}
+        },
+        "sources": {
+            "src/BlockMeta.sol": {
+                "keccak256": "0xbdc5d72b6d5eab867385d279eea3a36dc70fc21dd91750790e83f0e8724dc718",
+                "urls": [
+                    "bzz-raw://c7122fdef2316f20f01744bc285901301dcbbbb3a3441c911ab4fbc4301356a2",
+                    "dweb:/ipfs/QmR9WJihJPtrXqmn1ifD8mVQxAvyBGr7MBSf4ojKY52adf"
+                ],
+                "license": "UNLICENSED"
+            }
+        },
+        "version": 1
+    },
+    "id": 22
+}

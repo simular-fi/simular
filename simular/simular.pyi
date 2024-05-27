@@ -1,9 +1,9 @@
-from typing import Optional, Type
+from typing import Optional, Type, List, Tuple
 
 class PyEvm:
     def __new__(cls: Type["PyEvm"]) -> "PyEvm":
         """
-        Create an instance of the Evm
+        Create an instance of the Evm using In-memory storage
         """
 
     @staticmethod
@@ -65,4 +65,81 @@ class PyEvm:
         """
 
 class PyAbi:
-    def from_full_json(cls: Type["PyAbi"]): ...
+    """
+    Load, parse, and encode Solidity ABI information
+    """
+
+    @staticmethod
+    def from_full_json(abi: str) -> "PyAbi":
+        """
+        Load from a file that contains both ABI and bytecode information.
+        For example, the output from compiling a contract with Foundry
+
+        - `abi`: the str version of the compiled output file
+        """
+
+    @staticmethod
+    def from_abi_bytecode(abi: str, data: Optional[bytes]) -> "PyAbi":
+        """
+        Load the ABI and optionally the bytecode
+
+        - `abi`: just the abi information
+        - `data`: optionally the contract bytecode
+        """
+
+    @staticmethod
+    def from_human_readable(values: List[str]) -> "PyAbi":
+        """
+        Load from a list of contract function definitions.
+
+        - `values`: list of function definitions
+
+        For example: values = [
+            'function hello() returns (bool)',
+            'function add(uint256, uint256).
+        ]
+
+        Would provide the ABI to encode the 'hello' and 'add' functions
+        """
+
+    def has_function(self, name: str) -> bool:
+        """
+        Does the contract have the function with the given name?
+
+        - `name`: the function name
+        """
+
+    def has_fallback(self) -> bool:
+        """
+        Does the contract have a fallback?
+        """
+
+    def has_receive(self) -> bool:
+        """
+        Does the contract have a receive?
+        """
+
+    def bytecode(self) -> Optional[bytes]:
+        """
+        Return the bytecode for the contract or None
+        """
+
+    def encode_constructor(self, args: str) -> Tuple[bytes, bool]:
+        """
+        ABI encode contract constructor. This is a low-level call.
+        See `Contract`
+        """
+
+    def encode_function(
+        self, name: str, args: str
+    ) -> Tuple[bytes, bool, "DynSolTypeWrapper"]:
+        """
+        ABI encode a function.  This is a low-level call.
+        See `Contract`
+
+        - `name`: name of the function
+        - `args`: arguments to the function
+        """
+
+class DynSolTypeWrapper:
+    def __new__(cls: Type["DynSolTypeWrapper"]) -> "DynSolTypeWrapper": ...
