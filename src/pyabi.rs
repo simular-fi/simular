@@ -1,7 +1,8 @@
 //!
 //! Python wrapper for `simular-core::ContractAbi`
 //!
-use alloy_dyn_abi::DynSolType;
+use alloy_dyn_abi::{DynSolType, DynSolValue};
+use alloy_primitives::Log;
 use pyo3::prelude::*;
 
 use simular_core::ContractAbi;
@@ -58,6 +59,10 @@ impl PyAbi {
         self.0.bytecode()
     }
 
+    pub fn extract_logs(&self, logs: LogWrapper) -> DynSolEventWrapper {
+        DynSolEventWrapper(self.0.extract_logs(logs.0))
+    }
+
     /// Encode constructor arguments.
     /// Returns the encoded args, and whether the constructor is payable
     pub fn encode_constructor(&self, args: &str) -> anyhow::Result<(Vec<u8>, bool)> {
@@ -81,3 +86,10 @@ impl PyAbi {
 
 #[pyclass]
 pub struct DynSolTypeWrapper(pub DynSolType);
+
+#[pyclass]
+pub struct DynSolEventWrapper(pub Vec<(String, DynSolValue)>);
+
+#[pyclass]
+#[derive(Clone)]
+pub struct LogWrapper(pub Vec<Log>);

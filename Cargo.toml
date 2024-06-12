@@ -1,6 +1,6 @@
 [package]
 name = "simular"
-version = "0.2.3"
+version = "0.2.5"
 edition = "2021"
 authors = ["Dave Bryson"]
 readme = "README.md"
@@ -26,7 +26,8 @@ serde_json = "1.0.99"
 hex = { version = "0.4.3", features = ["serde"] }
 pyo3 = { version = "0.20.0", features = ["multiple-pymethods", "anyhow"] }
 
-simular-core = "0.2.4"
+#simular-core = "0.2.4"
+simular-core = { git = "https://github.com/simular-fi/simular-core", rev = "5926fd9" }
 
 
 # using this to allow cargo test on rust code. See:

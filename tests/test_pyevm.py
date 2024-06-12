@@ -53,7 +53,7 @@ def test_contract_raw_interaction(evm, bob, kitchen_sink_json):
     evm.transact("increment", "()", bob, contract_address, 0, abi)
 
     (enc1, _, _) = abi.encode_function("value", "()")
-    assert [1] == evm.call("value", "()", contract_address, abi)
+    assert ([1], {}) == evm.call("value", "()", contract_address, abi)
 
 
 def test_advance_block(evm, bob, block_meta_json):
@@ -63,7 +63,7 @@ def test_advance_block(evm, bob, block_meta_json):
     contract = contract_from_raw_abi(evm, block_meta_json)
     contract.deploy(caller=bob)
 
-    ts1, bn1 = contract.getMeta.call()
+    ([ts1, bn1], _) = contract.getMeta.call()
 
     assert bn1 == 1  # start at block 1
 
@@ -71,7 +71,7 @@ def test_advance_block(evm, bob, block_meta_json):
     evm.advance_block()
     evm.advance_block()
 
-    ts2, bn2 = contract.getMeta.call()
+    ([ts2, bn2], _) = contract.getMeta.call()
 
     assert bn2 == 4  # block advanced
     assert ts2 == ts1 + 36  # timestamp advanced
