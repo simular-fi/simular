@@ -7,7 +7,7 @@ use simular_core::{evm::CallResult, BaseEvm, CreateFork, SnapShot};
 use std::collections::HashMap;
 
 use crate::{
-    pyabi::{DynSolEventWrapper, DynSolTypeWrapper, LogWrapper, PyAbi},
+    pyabi::{DynSolTypeWrapper, LogWrapper, PyAbi},
     str_to_address,
 };
 
