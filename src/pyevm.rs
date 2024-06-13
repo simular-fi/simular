@@ -7,23 +7,25 @@ use simular_core::{evm::CallResult, BaseEvm, CreateFork, SnapShot};
 use std::collections::HashMap;
 
 use crate::{
-    pyabi::{DynSolTypeWrapper, LogWrapper, PyAbi},
+    pyabi::{DynSolTypeWrapper, PyAbi},
     str_to_address,
 };
 
 /// default block interval for advancing block time (12s)
 const DEFAULT_BLOCK_INTERVAL: u64 = 12;
 
+/// Container to hold the results of calling `transact` or `simulate`
 #[derive(Debug)]
-/// Result of calling `transact` or `simulate`
 #[pyclass]
 pub struct TxResult {
-    /// contract function call result, if any
+    /// contract function call return value, if any
     #[pyo3(get)]
     pub output: Option<PyObject>,
     /// emitted event information, if any
     #[pyo3(get)]
     pub event: Option<HashMap<String, PyObject>>,
+    #[pyo3(get)]
+    pub gas_used: u64,
 }
 
 #[pyclass]
@@ -196,15 +198,16 @@ fn process_results_and_events(
     py: Python<'_>,
 ) -> Result<TxResult> {
     let logs = output_result.logs.clone();
+    let gas_used = output_result.gas_used.clone();
 
     // process return value
     let output = process_results(output_result, decoder, py);
 
     // process logs
     let event = if logs.len() > 0 {
-        let raw_events = abi.extract_logs(LogWrapper(logs));
+        let raw_events = abi.0.extract_logs(logs);
         let mut map = HashMap::<String, PyObject>::new();
-        for (k, v) in raw_events.0 {
+        for (k, v) in raw_events {
             let d = DynSolMap(v);
             map.insert(k, d.into_py(py));
         }
@@ -212,7 +215,11 @@ fn process_results_and_events(
     } else {
         None
     };
-    Ok(TxResult { output, event })
+    Ok(TxResult {
+        output,
+        event,
+        gas_used,
+    })
 }
 
 fn walk_list(values: Vec<DynSolValue>, py: Python<'_>) -> PyObject {

@@ -1,8 +1,7 @@
 //!
 //! Python wrapper for `simular-core::ContractAbi`
 //!
-use alloy_dyn_abi::{DynSolType, DynSolValue};
-use alloy_primitives::Log;
+use alloy_dyn_abi::DynSolType;
 use pyo3::prelude::*;
 
 use simular_core::ContractAbi;
@@ -10,7 +9,7 @@ use simular_core::ContractAbi;
 /// Can load and parse ABI information.  Used in `Contract.py` to
 /// process function calls.
 #[pyclass]
-pub struct PyAbi(ContractAbi);
+pub struct PyAbi(pub ContractAbi);
 
 #[pymethods]
 impl PyAbi {
@@ -59,12 +58,6 @@ impl PyAbi {
         self.0.bytecode()
     }
 
-    /// Extract any logs using ABI Event information.
-    /// Where `LogWrapper` contains a Vec<revm::Log>
-    pub fn extract_logs(&self, logs: LogWrapper) -> DynSolEventWrapper {
-        DynSolEventWrapper(self.0.extract_logs(logs.0))
-    }
-
     /// Encode constructor arguments.
     /// Returns the encoded args, and whether the constructor is payable
     pub fn encode_constructor(&self, args: &str) -> anyhow::Result<(Vec<u8>, bool)> {
@@ -89,12 +82,3 @@ impl PyAbi {
 /// Wrapper needed by PyO3 for DynSolType
 #[pyclass]
 pub struct DynSolTypeWrapper(pub Option<DynSolType>);
-
-/// Wrapper needed by PyO3 for Event data
-#[pyclass]
-pub struct DynSolEventWrapper(pub Vec<(String, DynSolValue)>);
-
-/// Wrapper needed by PyO3 for Logs
-#[pyclass]
-#[derive(Clone)]
-pub struct LogWrapper(pub Vec<Log>);

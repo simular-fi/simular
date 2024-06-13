@@ -40,6 +40,8 @@ def test_contract_interface(evm, bob, alice, erc20abi, erc20bin):
     assert to == alice
     assert amt == 10
 
+    assert txr.gas_used > 0
+
     assert 10 == erc20.balanceOf.call(alice)
     assert 10 == erc20.totalSupply.call()
 
