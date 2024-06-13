@@ -25,8 +25,10 @@ For example, given the following Solidity contract:
             owner = msg.sender
         }
 
-        function addNum(uint256 num) public {
+        // add the number and returns the new value
+        function addNum(uint256 num) public returns (uint256) {
             value += num;
+            return value;
         }
     }
 
@@ -35,14 +37,17 @@ using Python's ``__getattr__``.  To execute the function you can use one of the 
 
 .. code-block:: python
 
-    # Send a write transaction to the contract. This will change state in the EVM. 
-    transact(*args, caller: str = None, value: int = 0)
+    # Send a write transaction to the contract. This will change state in the EVM.
+    tx_result = transact(*args, caller: str = None, value: int = 0)
 
     # Send a read transaction to the contract. This will NOT change state
-    call(*args)
+    result = call(*args)
 
     # Like transact but it will NOT change state.
-    simulate(*args, caller: str = None, value: int = 0)
+    tx_result = simulate(*args, caller: str = None, value: int = 0)
+
+Note that both ``transact`` and ``simulate`` return a ``TxResult`` object that contains 
+any return values from the call, and any events emitted.  See ``TxResult`` below.
 
 
 Example...
@@ -51,11 +56,15 @@ Example...
 
     >>> contract = Contract(evm, abi)
 
-    # Return the value of 'owner' in the contract
-    >>> contract.owner.call()
+    # Return the owner address from the contract
+    >>> owner_address = contract.owner.call()
 
     # Add 3 to the contract's 'value'
-    >>> contract.addNum.transact(3, caller=bob)
+    >>> tx_result = contract.addNum.transact(3, caller=bob)
+
+    # you can access any return values via the ``output`` attribute
+    >>> print(tx_result.output)
+    3
 
 Format:
 
@@ -190,3 +199,23 @@ Assume the ``HelloWorld.json`` is the compiled Solidy ABI
     :param value: (optional) amount of `wei` to send to the contract. This will fail if the contracts function is not mark as ``payable``
     :return: the result of the function call (if any)
     :raises Exception: If ``caller`` is not provided OR ``caller`` is not a valid address
+
+
+.. py:class:: TxResult
+
+    Container holding the results of a ``transact`` or ``simulate``
+
+    .. py:attribute:: output: 
+   
+    The return value from the contract.  May be None
+
+    .. py:attribute:: event 
+
+    Map of any emitted events, where each parsed event is keyed by the event name.  May be None 
+
+    .. py:attribute:: gas_used
+
+    Amount of gas used for the transaction
+
+    
+

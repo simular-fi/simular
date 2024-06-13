@@ -95,7 +95,10 @@ Load an ERC20 contract and mint tokens.
         # automatically attached to the erc20 contract
         # object as an attribute.
         # 'transact' is a write call to the contract (it will change state).
-        erc20.mint.transact(alice, 10, caller=bob)
+        tx1 = erc20.mint.transact(alice, 10, caller=bob)
+
+        # View emitted events
+        print(tx1.event['Transfer'])
 
         # check balances and supply
         assert 10 == erc20.balanceOf.call(alice)

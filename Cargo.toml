@@ -26,9 +26,7 @@ serde_json = "1.0.99"
 hex = { version = "0.4.3", features = ["serde"] }
 pyo3 = { version = "0.20.0", features = ["multiple-pymethods", "anyhow"] }
 
-#simular-core = "0.2.4"
-simular-core = { git = "https://github.com/simular-fi/simular-core", rev = "1f7c3b4" }
-
+simular-core = "0.2.5"
 
 # using this to allow cargo test on rust code. See:
 # https://github.com/PyO3/pyo3/issues/340#issuecomment-461514532
