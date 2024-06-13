@@ -30,17 +30,18 @@ def test_contract_interface(evm, bob, alice, erc20abi, erc20bin):
     erc20.deploy("USD Coin", "USDC", 6, caller=bob)
     contract_address = erc20.address
 
-    assert erc20.name.call() == (["USD Coin"], {})
-    assert erc20.decimals.call() == ([6], {})
-    assert erc20.owner.call() == ([bob], {})
+    assert erc20.name.call() == "USD Coin"
+    assert erc20.decimals.call() == 6
+    assert erc20.owner.call() == bob
 
-    (_, e) = erc20.mint.transact(alice, 10, caller=bob)
-    assert e["Transfer"]
-    assert e["Transfer"][1] == alice
-    assert e["Transfer"][2] == 10
+    txr = erc20.mint.transact(alice, 10, caller=bob)
+    assert txr.event["Transfer"]
+    (_, to, amt) = txr.event["Transfer"]
+    assert to == alice
+    assert amt == 10
 
-    assert ([10], {}) == erc20.balanceOf.call(alice)
-    assert ([10], {}) == erc20.totalSupply.call()
+    assert 10 == erc20.balanceOf.call(alice)
+    assert 10 == erc20.totalSupply.call()
 
     with pytest.raises(BaseException):
         # alice can't mint, she's not the owner!
@@ -51,7 +52,7 @@ def test_contract_interface(evm, bob, alice, erc20abi, erc20bin):
 
     erc20again = contract_from_inline_abi(evm2, ["function totalSupply() (uint256)"])
     erc20again.at(contract_address)
-    assert ([10], {}) == erc20again.totalSupply.call()
+    assert 10 == erc20again.totalSupply.call()
 
 
 def test_deploy_and_test_kitchensink(evm, alice, kitchen_sink_json):
@@ -64,11 +65,11 @@ def test_deploy_and_test_kitchensink(evm, alice, kitchen_sink_json):
 
     assert a.deploy(caller=alice)
 
-    assert ([1], {}) == a.increment.transact(caller=alice)
-    assert ([2, 3], {}) == a.increment.transact(2, caller=alice)
-    assert ([4], {}) == a.increment.simulate(caller=alice)
-    assert ([3], {}) == a.value.call()
-    assert ([alice], {}) == a.setInput.transact((1, 2, alice), caller=alice)
+    assert 1 == a.increment.transact(caller=alice).output
+    assert [2, 3] == a.increment.transact(2, caller=alice).output
+    assert 4 == a.increment.simulate(caller=alice).output
+    assert 3 == a.value.call()
+    assert alice == a.setInput.transact((1, 2, alice), caller=alice).output
 
     # receive
     one_ether = ether_to_wei(1)

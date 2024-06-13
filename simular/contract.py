@@ -50,8 +50,6 @@ class Function:
 
         stargs = convert_for_soltypes(args)
         result = self.evm.call(self.name, stargs, self.contract_address, self.abi)
-        if len(result) == 1:
-            return result[0]
         return result
 
     def simulate(self, *args, caller: str = None, value: int = 0):
@@ -68,8 +66,6 @@ class Function:
         result = self.evm.simulate(
             self.name, stargs, caller, self.contract_address, value, self.abi
         )
-        if len(result) == 1:
-            return result[0]
         return result
 
     def transact(self, *args, caller: str = None, value: int = 0):
@@ -90,8 +86,6 @@ class Function:
         result = self.evm.transact(
             self.name, stargs, caller, self.contract_address, value, self.abi
         )
-        if len(result) == 1:
-            return result[0]
         return result
 
 

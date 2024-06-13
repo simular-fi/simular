@@ -59,6 +59,8 @@ impl PyAbi {
         self.0.bytecode()
     }
 
+    /// Extract any logs using ABI Event information.
+    /// Where `LogWrapper` contains a Vec<revm::Log>
     pub fn extract_logs(&self, logs: LogWrapper) -> DynSolEventWrapper {
         DynSolEventWrapper(self.0.extract_logs(logs.0))
     }
@@ -84,12 +86,15 @@ impl PyAbi {
     }
 }
 
+/// Wrapper needed by PyO3 for DynSolType
 #[pyclass]
-pub struct DynSolTypeWrapper(pub DynSolType);
+pub struct DynSolTypeWrapper(pub Option<DynSolType>);
 
+/// Wrapper needed by PyO3 for Event data
 #[pyclass]
 pub struct DynSolEventWrapper(pub Vec<(String, DynSolValue)>);
 
+/// Wrapper needed by PyO3 for Logs
 #[pyclass]
 #[derive(Clone)]
 pub struct LogWrapper(pub Vec<Log>);

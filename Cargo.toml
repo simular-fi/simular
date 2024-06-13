@@ -27,7 +27,7 @@ hex = { version = "0.4.3", features = ["serde"] }
 pyo3 = { version = "0.20.0", features = ["multiple-pymethods", "anyhow"] }
 
 #simular-core = "0.2.4"
-simular-core = { git = "https://github.com/simular-fi/simular-core", rev = "5926fd9" }
+simular-core = { git = "https://github.com/simular-fi/simular-core", rev = "59e19ff" }
 
 
 # using this to allow cargo test on rust code. See:
