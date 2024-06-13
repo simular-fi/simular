@@ -82,6 +82,11 @@ impl PyEvm {
 
     /// Transaction (write) operation to a contract at the given address `to`. This
     /// will change state in the EVM.
+    ///
+    /// Returns any results of the call and a map of any emitted events.
+    /// Where the event map is:
+    /// `key`   is the name of the event
+    /// `value` is the decoded log
     pub fn transact(
         &mut self,
         fn_name: &str,
@@ -103,6 +108,11 @@ impl PyEvm {
 
     /// Transaction (read) operation to a contract at the given address `to`. This
     /// will NOT change state in the EVM.
+    ///
+    /// Returns any results of the call and a map of any emitted events.
+    /// Where the event map is:
+    /// `key`   is the name of the event
+    /// `value` is the decoded log
     pub fn call(
         &mut self,
         fn_name: &str,
@@ -120,6 +130,11 @@ impl PyEvm {
 
     /// Transaction operation to a contract at the given address `to`. This
     /// can simulate a transact/call operation, but will NOT change state in the EVM.
+    ///
+    /// Returns any results of the call and a map of any emitted events.
+    /// Where the event map is:
+    /// `key`   is the name of the event
+    /// `value` is the decoded log
     pub fn simulate(
         &mut self,
         fn_name: &str,
@@ -150,7 +165,7 @@ impl PyEvm {
     }
 }
 
-// *** Helpers to convert DynSolValues to PyObject *** //
+// *** lil' Helpers *** //
 
 // convert results and events to Python
 fn process_results_and_events(
