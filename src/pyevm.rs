@@ -3,11 +3,11 @@ use alloy_primitives::U256;
 use anyhow::{anyhow, Result};
 use core::ffi::c_uchar;
 use pyo3::{ffi, prelude::*};
-use simular_core::{BaseEvm, CreateFork, SnapShot};
+use simular_core::{evm::CallResult, BaseEvm, CreateFork, SnapShot};
 use std::collections::HashMap;
 
 use crate::{
-    pyabi::{DynSolEventWrapper, LogWrapper, PyAbi},
+    pyabi::{DynSolEventWrapper, DynSolTypeWrapper, LogWrapper, PyAbi},
     str_to_address,
 };
 
@@ -97,16 +97,8 @@ impl PyEvm {
         let v = U256::try_from(value)?;
         let (calldata, _is_payable, decoder) = abi.encode_function(fn_name, args)?;
         let output = self.0.transact_commit(a, b, calldata, v)?;
-
-        // process return value
-        let dynvalues = decoder.0.abi_decode_params(&output.result)?;
-        let dsm = DynSolMap(dynvalues.clone());
-
-        // process logs
-        let raw_events = abi.extract_logs(LogWrapper(output.logs));
-        let events = process_events(raw_events, py);
-
-        Ok((dsm.into_py(py), events))
+        let (results, events) = process_results_and_events(abi, output, decoder, py)?;
+        Ok((results, events))
     }
 
     /// Transaction (read) operation to a contract at the given address `to`. This
@@ -122,16 +114,8 @@ impl PyEvm {
         let to_address = str_to_address(to)?;
         let (calldata, _is_payable, decoder) = abi.encode_function(fn_name, args)?;
         let output = self.0.transact_call(to_address, calldata, U256::from(0))?;
-
-        // process return value
-        let dynvalues = decoder.0.abi_decode_params(&output.result)?;
-        let dsm = DynSolMap(dynvalues.clone());
-
-        // process logs
-        let raw_events = abi.extract_logs(LogWrapper(output.logs));
-        let events = process_events(raw_events, py);
-
-        Ok((dsm.into_py(py), events))
+        let (results, events) = process_results_and_events(abi, output, decoder, py)?;
+        Ok((results, events))
     }
 
     /// Transaction operation to a contract at the given address `to`. This
@@ -149,17 +133,10 @@ impl PyEvm {
         let caller_address = str_to_address(caller)?;
         let to_address = str_to_address(to)?;
         let v = U256::try_from(value)?;
-
         let (calldata, _is_payable, decoder) = abi.encode_function(fn_name, args)?;
         let output = self.0.simulate(caller_address, to_address, calldata, v)?;
-        // process return value
-        let dynvalues = decoder.0.abi_decode_params(&output.result)?;
-        let dsm = DynSolMap(dynvalues.clone());
-
-        // process logs
-        let raw_events = abi.extract_logs(LogWrapper(output.logs));
-        let events = process_events(raw_events, py);
-        Ok((dsm.into_py(py), events))
+        let (results, events) = process_results_and_events(abi, output, decoder, py)?;
+        Ok((results, events))
     }
 
     /// Advance block.number and block.timestamp. Set interval to the amount of
@@ -175,13 +152,26 @@ impl PyEvm {
 
 // *** Helpers to convert DynSolValues to PyObject *** //
 
-fn process_events(vals: DynSolEventWrapper, py: Python<'_>) -> HashMap<String, PyObject> {
+// convert results and events to Python
+fn process_results_and_events(
+    abi: &PyAbi,
+    output: CallResult,
+    decoder: DynSolTypeWrapper,
+    py: Python<'_>,
+) -> Result<(PyObject, HashMap<String, PyObject>)> {
+    // process return value
+    let dynvalues = decoder.0.abi_decode_params(&output.result)?;
+    let dsm = DynSolMap(dynvalues.clone());
+
+    // process logs
+    let raw_events = abi.extract_logs(LogWrapper(output.logs));
     let mut map = HashMap::<String, PyObject>::new();
-    for (k, v) in vals.0 {
+    for (k, v) in raw_events.0 {
         let d = DynSolMap(v);
         map.insert(k, d.into_py(py));
     }
-    map
+
+    Ok((dsm.into_py(py), map))
 }
 
 fn walk_list(values: Vec<DynSolValue>, py: Python<'_>) -> PyObject {
