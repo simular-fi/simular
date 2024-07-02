@@ -121,7 +121,7 @@ Methods
     :param address: the address of the deployed contract
 
 
-.. py:method:: deploy(*args, caller: str = None, value: int = 0)
+.. py:method:: deploy(*args, caller: str = None, value: int = 0) -> str
 
     Deploy a contract to the EVM. Under the covers, it uses the ABI to encode 
     the constructor call to make a transaction.
@@ -158,7 +158,7 @@ Assume the ``HelloWorld.json`` is the compiled Solidy ABI
     >>> contract.deploy(caller=bob)
     '0x0091410228bf6062ab28c949ba4172ee9144bfde'
 
-.. py:method:: transact(*args, caller: str = None, value: int = 0)
+.. py:method:: transact(*args, caller: str = None, value: int = 0) -> TxResult
 
     Execute a write transaction to the contract. This will change the state of the contract
 
@@ -169,10 +169,10 @@ Assume the ``HelloWorld.json`` is the compiled Solidy ABI
     :param args: 0 or more arguments expected by the Contract's function
     :param caller: (required) the address making the call. this is `msg.sender`
     :param value: (optional) amount of `wei` to send to the contract. This will fail if the contracts function is not mark as ``payable``
-    :return: the result of the function call (if any)
+    :return: the TxResult
     :raises Exception: If ``caller`` is not provided OR ``caller`` is not a valid address
 
-.. py:method:: call(*args)
+.. py:method:: call(*args) -> Any
 
     Execute a read transaction to the contract. This will NOT change the state of the contract
 
@@ -185,7 +185,7 @@ Assume the ``HelloWorld.json`` is the compiled Solidy ABI
     :raises Exception: If the contract does not have an address
 
 
-.. py:method:: simulate(*args, caller: str = None, value: int = 0)
+.. py:method:: simulate(*args, caller: str = None, value: int = 0) -> TxResult
 
     Just like ``transact``. Except it will NOT change the state of the contract.  Can be
     used to test a ``transact``.
@@ -197,7 +197,7 @@ Assume the ``HelloWorld.json`` is the compiled Solidy ABI
     :param args: 0 or more arguments expected by the Contract's function
     :param caller: (required) the address making the call. this is `msg.sender`
     :param value: (optional) amount of `wei` to send to the contract. This will fail if the contracts function is not mark as ``payable``
-    :return: the result of the function call (if any)
+    :return: the TxResult
     :raises Exception: If ``caller`` is not provided OR ``caller`` is not a valid address
 
 

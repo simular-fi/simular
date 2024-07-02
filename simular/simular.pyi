@@ -1,4 +1,25 @@
-from typing import Optional, Type, List, Tuple
+from typing import Optional, Type, List, Tuple, Any, Dict
+
+class TxResult:
+    @property
+    def output(self) -> Optional[Any]:
+        """
+        Return the output of the transaction, if any
+        """
+
+    @property
+    def event(self) -> Optional[Dict[str, Any]]:
+        """
+        Return a dict of events, where:
+        - key: name of the event
+        - value: event information
+        """
+
+    @property
+    def gas_used(self) -> int:
+        """
+        Return the amount of gas used by the transaction
+        """
 
 class PyEvm:
     def __new__(cls: Type["PyEvm"]) -> "PyEvm":

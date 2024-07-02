@@ -12,20 +12,20 @@ Provides several ``helper`` functions to simplify working with ``accounts`` and 
 Functions
 ---------
 
-.. py:function:: ether_to_wei(value: int)
+.. py:function:: ether_to_wei(value: int) -> int
 
     Convert Ether to Wei 
 
     :params value: the given value in Ether to convert 
     :return: the amount in Wei
 
-.. py:function:: generate_random_address()
+.. py:function:: generate_random_address() -> str
 
     Randomly generate an Ethereum address 
 
     :return: (str) the hex-encoded address
 
-.. py:function:: create_account(evm: PyEvm, address: str = None,  value: int = 0)
+.. py:function:: create_account(evm: PyEvm, address: str = None,  value: int = 0) -> str
 
     Create a new account in the Evm 
 
@@ -39,7 +39,7 @@ Functions
     * If no value is provided, the account balance will be set to 0
 
 
-.. py:function:: create_many_accounts(evm: PyEvm, num: int, value: int = 0)
+.. py:function:: create_many_accounts(evm: PyEvm, num: int, value: int = 0) -> [str]
 
     Just like ``create_account`` except it can create many accounts at once.
 
@@ -49,7 +49,7 @@ Functions
     :return: a list of account addresses
 
 
-.. py:function:: contract_from_raw_abi(evm: PyEvm, raw_abi: str)
+.. py:function:: contract_from_raw_abi(evm: PyEvm, raw_abi: str) -> Contract
 
     Create an instance of ``Contract`` given the full ABI. A full ABI should include
     the `abi` and `bytecode`. This is usually a single json file from a compiled Solidity contract.
@@ -62,7 +62,7 @@ Functions
     Don't forget to ``deploy`` the contract to make it available in the EVM
 
 
-.. py:function:: contract_from_abi_bytecode(evm: PyEvm, raw_abi: str, bytecode: bytes = None)
+.. py:function:: contract_from_abi_bytecode(evm: PyEvm, raw_abi: str, bytecode: bytes = None) -> Contract
 
     Create an instance of ``Contract`` from the ABI and (optionally) the contract creation
     bytecode.  This is often used when you have the ABI and bytecode are not in the same file OR 
@@ -79,7 +79,7 @@ Functions
     Don't forget to ``deploy`` the contract to make it available in the EVM
 
 
-.. py:function:: contract_from_inline_abi(evm: PyEvm, abi: typing.List[str])
+.. py:function:: contract_from_inline_abi(evm: PyEvm, abi: typing.List[str]) -> Contract
 
     Create an instance of ``Contract`` from a user-friendly form of the ABI This is used 
     to interact with an already deployed contract.  See `Human-Friendly ABI <https://docs.ethers.org/v5/api/utils/abi/formats/#abi-formats--human-readable-abi>`_

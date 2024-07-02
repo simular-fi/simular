@@ -5,10 +5,10 @@ Wraps pyo3 code to provide a high-level contract API
 from eth_utils import is_address
 import typing
 
-from .simular import PyEvm, PyAbi
+from .simular import PyEvm, PyAbi, TxResult
 
 
-def convert_for_soltypes(args: typing.Tuple):
+def convert_for_soltypes(args: typing.Tuple) -> str:
     """
     This converts `args` into a string for processing on the Rust side
     """
@@ -35,7 +35,7 @@ class Function:
         self.abi = abi
         self.contract_address = contract_address
 
-    def call(self, *args):
+    def call(self, *args) -> typing.Any:
         """
         Make a read-only call to the contract, returning any results. Solidity
         read-only calls are marked as `view` or `pure`. Does not commit any state
@@ -52,7 +52,7 @@ class Function:
         result = self.evm.call(self.name, stargs, self.contract_address, self.abi)
         return result
 
-    def simulate(self, *args, caller: str = None, value: int = 0):
+    def simulate(self, *args, caller: str = None, value: int = 0) -> "TxResult":
         """
         Simulate a write call to the contract w/o changing state.
         """
@@ -68,7 +68,7 @@ class Function:
         )
         return result
 
-    def transact(self, *args, caller: str = None, value: int = 0):
+    def transact(self, *args, caller: str = None, value: int = 0) -> "TxResult":
         """
         Make a write call to the contract changing the state of the Evm.
         - `args`: 0 or more expected arguments to the function

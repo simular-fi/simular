@@ -7,7 +7,7 @@ Install
 -------
 
 Simular is available on `PyPi <https://pypi.org/project/simular-evm/>`_
-It requires Python ``>=3.11``.
+It requires Python ``>=3.10``.
 
 .. code-block:: bash
 

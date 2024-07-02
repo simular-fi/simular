@@ -3,8 +3,8 @@
 build:
 	hatch run dev:maturin develop
 
-# this build the production release
-dev_release:
+# this builds the production release
+prod_release:
 	hatch run dev:maturin develop --release
 
 test: build
@@ -13,7 +13,7 @@ test: build
 rust_tests:
 	cargo test --no-default-features
 
-benchit:
+benchit: prod_release
 	hatch run dev:python bench/simple.py
 
 docs: 

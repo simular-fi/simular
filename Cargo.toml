@@ -1,6 +1,6 @@
 [package]
 name = "simular"
-version = "0.2.5"
+version = "0.2.6"
 edition = "2021"
 authors = ["Dave Bryson"]
 readme = "README.md"
