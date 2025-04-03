@@ -230,23 +230,27 @@ fn walk_list(values: Vec<DynSolValue>, py: Python<'_>) -> PyObject {
         .into_py(py)
 }
 
+// Convert DynSolValue signed and unsigned ints to Python.
+// these values originate from Solidity types.
+// Goal is to support u/i8 -> u/i256
+fn convert_ints(bytes: [u8; 32], is_signed: bool, py: Python<'_>) -> PyObject {
+    let signed = if is_signed { 1 } else { 0 };
+    unsafe {
+        let obj =
+            ffi::_PyLong_FromByteArray(bytes.as_ptr().cast::<c_uchar>(), bytes.len(), 1, signed);
+        PyObject::from_owned_ptr(py, obj)
+    }
+}
+
+// Transform DynSolValues to Python types.
 fn base_exctract(dv: DynSolValue, py: Python<'_>) -> PyObject {
     match dv {
         DynSolValue::Address(a) => format!("{a:?}").into_py(py),
         DynSolValue::Bool(a) => a.into_py(py),
         DynSolValue::String(a) => a.into_py(py),
         DynSolValue::Tuple(a) => walk_list(a, py),
-        DynSolValue::Int(a, _) => a.as_i64().into_py(py),
-        DynSolValue::Uint(a, _) => {
-            let bytes = a.as_le_bytes();
-            // put on your life jacket we're entering 'unsafe' waters
-            // ...adapted from ruint pyo3 extension
-            unsafe {
-                let obj =
-                    ffi::_PyLong_FromByteArray(bytes.as_ptr().cast::<c_uchar>(), bytes.len(), 1, 0);
-                PyObject::from_owned_ptr(py, obj)
-            }
-        }
+        DynSolValue::Int(a, _) => convert_ints(a.to_le_bytes::<32>(), true, py),
+        DynSolValue::Uint(a, _) => convert_ints(a.to_le_bytes::<32>(), false, py),
         DynSolValue::Bytes(a) => a.into_py(py),
         DynSolValue::FixedBytes(a, _) => a.to_vec().into_py(py),
         DynSolValue::Array(a) => walk_list(a, py),

@@ -48,3 +48,10 @@ def block_meta_json():
     with open(f"{PATH}/./fixtures/BlockMeta.json") as f:
         rawabi = f.read()
     return rawabi
+
+
+@pytest.fixture
+def signed_ints_json():
+    with open(f"{PATH}/./fixtures/SignedInts.json") as f:
+        rawabi = f.read()
+    return rawabi
