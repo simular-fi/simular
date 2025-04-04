@@ -10,7 +10,7 @@ sdist-include = ["LICENSE", "README.md"]
 [project]
 name = "simular-evm"
 version = "0.3.0"
-requires-python = ">=3.10"
+requires-python = ">=3.10,<3.12"
 authors = [
     { name = "Dave Bryson", email = "davebryson@users.noreply.github.com" },
 ]
