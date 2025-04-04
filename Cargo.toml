@@ -52,7 +52,7 @@ reqwest = { version = "0.11.19", features = ["rustls-tls"] }
 openssl = { version = "0.10", features = ["vendored"] }
 
 # Python wrapper
-pyo3 = { version = "0.20.0", features = ["multiple-pymethods", "anyhow"] }
+pyo3 = { version = "0.24.1", features = ["multiple-pymethods", "anyhow"] }
 
 
 # using this to allow cargo test on rust code. See:

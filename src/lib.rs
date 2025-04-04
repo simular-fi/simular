@@ -15,9 +15,18 @@ pub fn str_to_address(caller: &str) -> Result<Address> {
 }
 
 #[pymodule]
-fn simular(_py: Python<'_>, m: &PyModule) -> PyResult<()> {
+fn simular(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_class::<pyabi::PyAbi>()?;
     m.add_class::<pyevm::PyEvm>()?;
     m.add_class::<pyevm::TxResult>()?;
     Ok(())
 }
+
+/*
+#[pymodule]
+fn simular(_py: Python<'_>, m: &PyModule) -> PyResult<()> {
+   m.add_class::<pyabi::PyAbi>()?;
+    m.add_class::<pyevm::PyEvm>()?;
+    m.add_class::<pyevm::TxResult>()?;
+    Ok(())
+}*/
