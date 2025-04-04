@@ -9,7 +9,7 @@ sdist-include = ["LICENSE", "README.md"]
 
 [project]
 name = "simular-evm"
-version = "0.2.7"
+version = "0.3.0"
 requires-python = ">=3.10"
 authors = [
     { name = "Dave Bryson", email = "davebryson@users.noreply.github.com" },
@@ -35,7 +35,7 @@ dependencies = ["eth-abi>=4.1.0", "eth-utils>=2.2.0"]
 dependencies = [
     "pytest>=7.4.0",
     "black>=23.7.0",
-    "maturin==1.6.0",
+    "maturin>=1.6.0",
     "sphinx>=7.2.6",
     "sphinx_rtd_theme>=2.0.0",
 ]

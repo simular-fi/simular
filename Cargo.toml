@@ -1,6 +1,6 @@
 [package]
 name = "simular"
-version = "0.2.6"
+version = "0.3.0"
 edition = "2021"
 authors = ["Dave Bryson"]
 readme = "README.md"
@@ -10,6 +10,7 @@ repository = "https://github.com/simular-fi/simular"
 homepage = "https://github.com/simular-fi/simular"
 categories = ["cryptography::cryptocurrencies"]
 keywords = ["revm", "python", "ethereum", "web3", "abm"]
+rust-version = "1.76.0"
 
 [lib]
 name = "simular"
@@ -17,16 +18,42 @@ crate-type = ["cdylib", "rlib"]
 
 
 [dependencies]
+# helpers
 anyhow = "1.0.81"
-alloy-dyn-abi = "0.7.0"
-alloy-primitives = { version = "0.7.0", default-features = false }
+thiserror = "1.0.58"
 serde = "1.0.165"
 serde_json = "1.0.99"
-
 hex = { version = "0.4.3", features = ["serde"] }
+
+# Alloy
+alloy-dyn-abi = "0.7.0"
+alloy-json-abi = "0.7.0"
+alloy-primitives = { version = "0.7.0", default-features = false }
+alloy-sol-types = { version = "0.7.0", features = ["json"] }
+
+# EVM
+revm = { version = "8.0.0", default-features = false, features = [
+    "tokio",
+    "memory_limit",
+    "optional_eip3607",
+    "optional_block_gas_limit",
+    "optional_no_base_fee",
+    "arbitrary",
+] }
+
+
+# required for forkdb
+tokio = { version = "1.37.0", features = ["rt-multi-thread", "macros"] }
+ethers-core = { version = "2.0.10", default-features = false }
+ethers-providers = "2.0.10"
+# need this feature in reqwest to deal with potential self-signed certs
+reqwest = { version = "0.11.19", features = ["rustls-tls"] }
+# resolve build issues on Ubuntu
+openssl = { version = "0.10", features = ["vendored"] }
+
+# Python wrapper
 pyo3 = { version = "0.20.0", features = ["multiple-pymethods", "anyhow"] }
 
-simular-core = "0.2.5"
 
 # using this to allow cargo test on rust code. See:
 # https://github.com/PyO3/pyo3/issues/340#issuecomment-461514532

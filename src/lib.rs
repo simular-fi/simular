@@ -1,3 +1,4 @@
+mod core;
 mod pyabi;
 mod pyevm;
 

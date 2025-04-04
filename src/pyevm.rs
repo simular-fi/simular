@@ -1,9 +1,9 @@
+use crate::core::{evm::BaseEvm, evm::CallResult, snapshot::SnapShot, storage::CreateFork};
 use alloy_dyn_abi::DynSolValue;
 use alloy_primitives::U256;
 use anyhow::{anyhow, Result};
 use core::ffi::c_uchar;
 use pyo3::{ffi, prelude::*};
-use simular_core::{evm::CallResult, BaseEvm, CreateFork, SnapShot};
 use std::collections::HashMap;
 
 use crate::{

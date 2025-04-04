@@ -4,7 +4,7 @@
 use alloy_dyn_abi::DynSolType;
 use pyo3::prelude::*;
 
-use simular_core::ContractAbi;
+use crate::core::abi::ContractAbi;
 
 /// Can load and parse ABI information.  Used in `Contract.py` to
 /// process function calls.
