@@ -1,5 +1,5 @@
 [build-system]
-requires = ["maturin>=1.1,<2.0"]
+requires = ["maturin==1.7.4"]
 build-backend = "maturin"
 
 [tool.maturin]
@@ -33,7 +33,7 @@ dependencies = ["eth-abi>=4.1.0", "eth-utils>=2.2.0"]
 dependencies = [
     "pytest>=7.4.0",
     "black>=23.7.0",
-    "maturin>=1.6.0",
+    "maturin==1.7.4",
     "sphinx>=7.2.6",
     "sphinx_rtd_theme>=2.0.0",
 ]
