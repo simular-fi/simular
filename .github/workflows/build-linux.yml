@@ -4,34 +4,38 @@ on:
   workflow_dispatch
 
 jobs:
-  check_main:
-    runs-on: ubuntu-latest
+  check_pyo3:
+    runs-on: ubuntu-22.04
     steps:
       - name: Release from main
-        if: github.ref == 'refs/heads/master'
+        if: github.ref == 'refs/heads/uppy03'
         run: echo '::notice ::Building and uploading release'
       - name: No release
-        if: github.ref != 'refs/heads/master'
-        run: echo '::warning ::Release can only be run from the main branch!' && exit 1
-  
+        if: github.ref != 'refs/heads/uppy03'
+        run: echo '::warning ::test only be run from the uppy03 branch!' && exit 1
+
   linux:
-    runs-on: ubuntu-latest
+    runs-on: ${{ matrix.platform.runner }}
     strategy:
       matrix:
-        target: [x86_64, aarch64, armv7]
-    needs: [check_main]
+        platform:
+          - runner: ubuntu-22.04
+            target: x86_64
+          - runner: ubuntu-22.04
+            target: x86
+          - runner: ubuntu-22.04
+            target: aarch64
+          - runner: ubuntu-22.04
+            target: armv7
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-python@v4
+      - uses: actions/setup-python@v5
         with:
-          python-version: '3.10'
+          python-version: 3.x
       - name: Build wheels
         uses: PyO3/maturin-action@v1
         with:
-          target: ${{ matrix.target }}
+          target: ${{ matrix.platform.target }}
           args: --release --out dist --find-interpreter
-          sccache: 'true'
+          sccache: ${{ !startsWith(github.ref, 'refs/tags/') }}
           manylinux: auto
-          before-script-linux: |
-            sudo apt-get update
-            sudo apt-get install --yes --upgrade build-essential cmake protobuf-compiler libssl-dev glibc-source musl-tools
