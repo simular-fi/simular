@@ -5,7 +5,7 @@ build:
 
 # this builds the production release
 prod_release:
-	hatch run dev:maturin develop --release
+	hatch run dev:maturin build
 
 test: build
 	hatch run dev:pytest tests/*

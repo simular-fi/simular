@@ -16,9 +16,6 @@ authors = [
 ]
 license = "Apache-2.0"
 readme = "README.md"
-homepage = "https://github.com/simular-fi/simular"
-repository = "https://github.com/simular-fi/simular"
-documentation = "https://simular.readthedocs.io/en/latest/"
 keywords = ["agent-based modeling", "ethereum", "solidity", "simulation"]
 description = "smart-contract api and embedded ethereum virtual machine"
 classifiers = [
@@ -45,6 +42,7 @@ dependencies = [
 docs = "sphinx-build -M html docs docs/build"
 
 [project.urls]
-Source = "https://github.com/simular-fi/simular"
-Documentation = "https://simular.readthedocs.io/en/latest/"
-Issues = "https://github.com/simular-fi/simular/issues"
+homepage = "https://github.com/simular-fi/simular"
+repository = "https://github.com/simular-fi/simular"
+documentation = "https://simular.readthedocs.io/en/latest/"
+issues = "https://github.com/simular-fi/simular/issues"
