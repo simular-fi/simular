@@ -2,7 +2,8 @@
 //! Python wrapper for `simular-core::ContractAbi`
 //!
 use alloy_dyn_abi::DynSolType;
-use pyo3::prelude::*;
+use pyo3::{prelude::*, pybacked::PyBackedStr};
+use std::str;
 
 use crate::core::abi::ContractAbi;
 
@@ -34,8 +35,13 @@ impl PyAbi {
     /// `["function hello() (uint256)"]` creates the function `hello` that
     /// can be encoded/decoded for calls to the Evm.
     #[staticmethod]
-    pub fn from_human_readable(values: Vec<&str>) -> Self {
-        Self(ContractAbi::from_human_readable(values))
+    pub fn from_human_readable(values: Vec<PyBackedStr>) -> Self {
+        // convert PyBackStr into &str
+        let mapped: Vec<&str> = values
+            .iter()
+            .map(|i| str::from_utf8(i.as_bytes()).unwrap())
+            .collect();
+        Self(ContractAbi::from_human_readable(mapped))
     }
 
     /// Does the ABI contain the function `name`

@@ -3,7 +3,7 @@ use alloy_dyn_abi::DynSolValue;
 use alloy_primitives::U256;
 use anyhow::{anyhow, Result};
 use core::ffi::c_uchar;
-use pyo3::{ffi, prelude::*};
+use pyo3::{ffi, prelude::*, IntoPyObjectExt};
 use std::collections::HashMap;
 
 use crate::{
@@ -64,6 +64,7 @@ impl PyEvm {
     }
 
     /// Create account with an initial balance
+    #[pyo3(signature = (address, balance=None))]
     pub fn create_account(&mut self, address: &str, balance: Option<u128>) -> Result<()> {
         let caller = str_to_address(address)?;
         let value = balance.map(U256::from);
@@ -168,6 +169,7 @@ impl PyEvm {
     /// number will automatically increment.
     ///
     /// When using a fork the initial block.number/timestamp will come from the snapshot.
+    #[pyo3(signature = (interval=None))]
     pub fn advance_block(&mut self, interval: Option<u64>) {
         let it = interval.unwrap_or(DEFAULT_BLOCK_INTERVAL);
         self.0.update_block(it);
@@ -184,7 +186,7 @@ fn process_results(
     if let Some(de) = decoder.0 {
         let dynvalues = de.abi_decode(&output.result).unwrap();
         let d = DynSolMap(dynvalues.clone());
-        Some(d.into_py(py))
+        Some(d.into_py_any(py).unwrap())
     } else {
         None
     }
@@ -209,7 +211,7 @@ fn process_results_and_events(
         let mut map = HashMap::<String, PyObject>::new();
         for (k, v) in raw_events {
             let d = DynSolMap(v);
-            map.insert(k, d.into_py(py));
+            map.insert(k, d.into_py_any(py).unwrap());
         }
         Some(map)
     } else {
@@ -227,7 +229,8 @@ fn walk_list(values: Vec<DynSolValue>, py: Python<'_>) -> PyObject {
         .into_iter()
         .map(|dv| base_exctract(dv, py))
         .collect::<Vec<_>>()
-        .into_py(py)
+        .into_py_any(py)
+        .unwrap()
 }
 
 // Convert DynSolValue signed and unsigned ints to Python.
@@ -245,14 +248,14 @@ fn convert_ints(bytes: [u8; 32], is_signed: bool, py: Python<'_>) -> PyObject {
 // Transform DynSolValues to Python types.
 fn base_exctract(dv: DynSolValue, py: Python<'_>) -> PyObject {
     match dv {
-        DynSolValue::Address(a) => format!("{a:?}").into_py(py),
-        DynSolValue::Bool(a) => a.into_py(py),
-        DynSolValue::String(a) => a.into_py(py),
+        DynSolValue::Address(a) => format!("{a:?}").into_pyobject(py).unwrap().into(),
+        DynSolValue::Bool(a) => a.into_py_any(py).unwrap(),
+        DynSolValue::String(a) => a.into_pyobject(py).unwrap().into(),
         DynSolValue::Tuple(a) => walk_list(a, py),
         DynSolValue::Int(a, _) => convert_ints(a.to_le_bytes::<32>(), true, py),
         DynSolValue::Uint(a, _) => convert_ints(a.to_le_bytes::<32>(), false, py),
-        DynSolValue::Bytes(a) => a.into_py(py),
-        DynSolValue::FixedBytes(a, _) => a.to_vec().into_py(py),
+        DynSolValue::Bytes(a) => a.to_vec().into_py_any(py).unwrap(),
+        DynSolValue::FixedBytes(a, _) => a.to_vec().into_py_any(py).unwrap(),
         DynSolValue::Array(a) => walk_list(a, py),
         DynSolValue::FixedArray(a) => walk_list(a, py),
         _ => unimplemented!(),
@@ -261,8 +264,12 @@ fn base_exctract(dv: DynSolValue, py: Python<'_>) -> PyObject {
 
 pub struct DynSolMap(DynSolValue);
 
-impl IntoPy<PyObject> for DynSolMap {
-    fn into_py(self, py: Python<'_>) -> PyObject {
-        base_exctract(self.0, py)
+impl<'py> IntoPyObject<'py> for DynSolMap {
+    type Target = PyAny; // the Python type
+    type Output = Bound<'py, Self::Target>;
+    type Error = std::convert::Infallible;
+
+    fn into_pyobject(self, py: Python<'py>) -> Result<Self::Output, Self::Error> {
+        Ok(base_exctract(self.0, py).into_bound(py))
     }
 }
