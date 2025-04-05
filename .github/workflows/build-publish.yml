@@ -12,7 +12,30 @@ jobs:
         run: echo '::notice ::Building and uploading release'
       - name: No release
         if: github.ref != 'refs/heads/master'
-        run: echo '::warning ::Release can only be run from the main branch!' && exit 1
+        run: echo '::warning ::Release can only be run from the master branch!' && exit 1
+
+  macos:
+    runs-on: macos-latest
+    strategy:
+      matrix:
+        target: [x86_64, aarch64]
+    needs: [check_main]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: 3.x
+      - name: Build wheels
+        uses: PyO3/maturin-action@v1
+        with:
+          target: ${{ matrix.target }}
+          args: --release --out dist --find-interpreter
+          sccache: ${{ !startsWith(github.ref, 'refs/tags/') }}
+      - name: Upload wheels
+        uses: actions/upload-artifact@v4
+        with:
+          name: wheels-macos-${{ matrix.target }}
+          path: dist
 
   linux:
     runs-on: ubuntu-latest
